@@ -5,7 +5,7 @@ import com.example.demo.dto.client.request.ClientEdditInfoRequest;
 import com.example.demo.dto.client.response.ClientInfoResponse;
 import com.example.demo.entity.Client;
 import com.example.demo.entity.User;
-import com.example.demo.exception.Exception;
+import com.example.demo.exception.hotelException;
 import com.example.demo.repository.ClientRepository;
 import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -22,11 +22,11 @@ public class ClientService {
 
     @Transactional
     public void registerClient(RegistRequest registRequest) {
-        if(userRepository.findByUsername(registRequest.getUsername()).isPresent()){
-            throw new Exception("User đã tồn tại");
+        if(userRepository.findByUsername(registRequest.getEmail()).isPresent()){
+            throw new hotelException("User đã tồn tại");
         }
         User userEntity = User.builder()
-                .username(registRequest.getUsername())
+                .username(registRequest.getEmail())
                 .password(passwordEncoder.encode(registRequest.getPassword()))
                 .role("CLIENT")
                 .build();
@@ -34,21 +34,23 @@ public class ClientService {
 
         Client client = Client.builder()
                 .userId(user.getId())
-                .fullName(registRequest.getFullName())
-                .address(registRequest.getAddress())
+                .email(registRequest.getEmail())
+                .firstName(registRequest.getFirstName())
+                .lastName(registRequest.getLastName())
                 .build();
         clientRepository.save(client);
     }
     public void editInfo(ClientEdditInfoRequest request){
         Client client = clientRepository.findById(request.getUserId())
-                .orElseThrow(() -> new Exception("Client not found by id: " + request.getUserId()));
+                .orElseThrow(() -> new hotelException("Client not found by id: " + request.getUserId()));
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new Exception("User not found by id: " + request.getUserId()));
+                .orElseThrow(() -> new hotelException("User not found by id: " + request.getUserId()));
 
         user.setUsername(request.getEmail());
-        client.setFullName(request.getFullName());
+        client.setFirstName(request.getFirstName());
+        client.setLastName(request.getLastName());
         client.setPhoneNumber(request.getPhoneNumber());
-        client.setAddress(request.getAddress());
+        client.setEmail(request.getEmail());
         client.setPhoneNumber(request.getPhoneNumber());
 
         userRepository.save(user);

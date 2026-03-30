@@ -8,11 +8,11 @@ public class ClientEdditInfoRequest {
     @NotNull
     private Long userId;
     @NotNull
-    private String fullName;
+    private String firstName;
+    @NotNull
+    private String lastName;
     @NotNull
     private String email;
     @NotNull
     private String phoneNumber;
-    @NotNull
-    private String address;
-}
+    }

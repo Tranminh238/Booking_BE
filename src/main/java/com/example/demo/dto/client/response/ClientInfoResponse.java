@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ClientInfoResponse {
     private Long userId;
     private String email;
-    private String fullName;
+    private String firstName;
+    private String lastName;
     private String phoneNumber;
-    private String address;
 }

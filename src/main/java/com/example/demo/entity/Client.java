@@ -15,7 +15,8 @@ public class Client {
     private Long id;
     private Long userId;
     private String email;
-    private String fullName;
+    private String firstName;
+    private String lastName;
     private String phoneNumber;
     private String address;
 }

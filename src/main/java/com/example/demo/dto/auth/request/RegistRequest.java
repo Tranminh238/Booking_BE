@@ -11,24 +11,22 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegistRequest {
-    @NotBlank
-    private String username;
-
-    @NotBlank
-    private String password;
-
-    @NotBlank
-    private String confirmPassword;
-
-    @NotBlank
+    @NotBlank(message = "Email không được để trống")
     private String email;
 
-    @NotBlank
-    private String fullName;
+    @NotBlank(message = "Password không được để trống")
+    private String password;
 
-    @NotBlank
+    @NotBlank(message = "ConfirmPassword không được để trống")
+    private String confirmPassword;
+
+    @NotBlank(message = "FirstName không được để trống")
+    private String firstName;
+
+    @NotBlank(message = "LastName không được để trống")
+    private String lastName;
+
+    @NotBlank(message = "PhoneNumber không được để trống")
     private String phoneNumber;
 
-    @NotBlank
-    private String address;
 }

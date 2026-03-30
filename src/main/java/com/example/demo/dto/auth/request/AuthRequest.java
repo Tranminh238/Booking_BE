@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthRequest {
-    @NotBlank
+    @NotBlank(message = "Username không được để trống")
     private String username;
-    @NotBlank
+    @NotBlank(message = "Password không được để trống")
     private String password;
 }
