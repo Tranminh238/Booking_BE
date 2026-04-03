@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.User;
+import com.example.demo.entity.Account;
 import com.example.demo.repository.ClientRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.dto.auth.request.AuthRequest;
@@ -33,7 +33,7 @@ public class AuthService {
         if (userRepository.findByUsername(request.getUsername()).isEmpty()) {
             throw new hotelException("Tài khoản không tồn tại");
         }
-        Optional<User> user = userRepository.findByUsername(request.getUsername());
+        Optional<Account> user = userRepository.findByUsername(request.getUsername());
         if (user.isPresent()) {
             boolean checkPassword = passwordEncoder.matches(request.getPassword(), user.get().getPassword());
             if (!checkPassword) {
@@ -49,7 +49,7 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             String jwtToken = jwtService.createToken(authentication);
 
-            Optional<com.example.demo.entity.Client> clientOpt = clientRepository.findByUserId(user.get().getId());
+            Optional<com.example.demo.entity.User> clientOpt = clientRepository.findByUserId(user.get().getId());
             String fName = clientOpt.isPresent() ? clientOpt.get().getFirstName() : "";
             String lName = clientOpt.isPresent() ? clientOpt.get().getLastName() : "";
 

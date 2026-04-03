@@ -3,8 +3,8 @@ package com.example.demo.service;
 import com.example.demo.dto.auth.request.RegistRequest;
 import com.example.demo.dto.client.request.ClientEdditInfoRequest;
 import com.example.demo.dto.client.response.ClientInfoResponse;
-import com.example.demo.entity.Client;
 import com.example.demo.entity.User;
+import com.example.demo.entity.Account;
 import com.example.demo.exception.hotelException;
 import com.example.demo.repository.ClientRepository;
 import com.example.demo.repository.UserRepository;
@@ -25,14 +25,14 @@ public class ClientService {
         if(userRepository.findByUsername(registRequest.getEmail()).isPresent()){
             throw new hotelException("User đã tồn tại");
         }
-        User userEntity = User.builder()
+        Account userEntity = Account.builder()
                 .username(registRequest.getEmail())
                 .password(passwordEncoder.encode(registRequest.getPassword()))
                 .role("CLIENT")
                 .build();
-        User user = userRepository.save(userEntity);
+        Account user = userRepository.save(userEntity);
 
-        Client client = Client.builder()
+        User client = User.builder()
                 .userId(user.getId())
                 .email(registRequest.getEmail())
                 .firstName(registRequest.getFirstName())
@@ -41,9 +41,9 @@ public class ClientService {
         clientRepository.save(client);
     }
     public void editInfo(ClientEdditInfoRequest request){
-        Client client = clientRepository.findById(request.getUserId())
+        User client = clientRepository.findById(request.getUserId())
                 .orElseThrow(() -> new hotelException("Client not found by id: " + request.getUserId()));
-        User user = userRepository.findById(request.getUserId())
+        Account user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new hotelException("User not found by id: " + request.getUserId()));
 
         user.setUsername(request.getEmail());

@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.User;
+import com.example.demo.entity.Account;
 import io.jsonwebtoken.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +25,7 @@ public class JwtService {
     }
 
     public String refreshToken(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        Account user = (Account) authentication.getPrincipal();
         return Jwts.builder().setSubject(user.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime() + JWT_EXP * 1000))
