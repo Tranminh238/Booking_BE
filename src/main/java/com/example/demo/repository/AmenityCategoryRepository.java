@@ -7,7 +7,7 @@ import com.example.demo.entity.AmenityCategory;
 import java.util.List;
 
 @Repository
-public interface AmentityCategoryRepository extends JpaRepository<AmenityCategory, Long> {
+public interface AmenityCategoryRepository extends JpaRepository<AmenityCategory, Long> {
     List<AmenityCategory> findAll();
     boolean existsByName(String name);
 }
