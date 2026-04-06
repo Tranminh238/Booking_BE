@@ -9,9 +9,9 @@ import com.example.demo.entity.Account;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<Account, Long> {
+public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByUsername(String username);
 
-    @Query("SELECT u.role FROM User u WHERE u.username = :userName")
+    @Query("SELECT a.role FROM Account a WHERE a.username = :userName")
     String findUserRoleByUsername(@Param("userName") String userName);
 }

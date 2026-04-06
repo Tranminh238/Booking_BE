@@ -1,11 +1,11 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Account;
-import com.example.demo.repository.ClientRepository;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.dto.auth.request.AuthRequest;
-import com.example.demo.dto.auth.response.AuthResponse;
+import com.example.demo.repository.UsersRepository;
+import com.example.demo.repository.AccountRepository;
 import com.example.demo.dto.base.BaseResponse;
+import com.example.demo.dto.user.request.AuthRequest;
+import com.example.demo.dto.user.response.AuthResponse;
 import com.example.demo.exception.hotelException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,9 +22,9 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
-    private final UserRepository userRepository;
-    private final ClientRepository clientRepository;
+public class UserService {
+    private final AccountRepository userRepository;
+    private final UsersRepository clientRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;

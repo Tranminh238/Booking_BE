@@ -1,13 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.auth.request.RegistRequest;
-import com.example.demo.dto.client.request.ClientEdditInfoRequest;
-import com.example.demo.dto.client.response.ClientInfoResponse;
+import com.example.demo.dto.Account.request.ClientEdditInfoRequest;
+import com.example.demo.dto.Account.response.ClientInfoResponse;
+import com.example.demo.dto.user.request.RegistRequest;
 import com.example.demo.entity.User;
 import com.example.demo.entity.Account;
 import com.example.demo.exception.hotelException;
-import com.example.demo.repository.ClientRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.UsersRepository;
+import com.example.demo.repository.AccountRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ClientService {
-    private final ClientRepository clientRepository;
-    private final UserRepository userRepository;
+public class AccountService {
+    private final UsersRepository clientRepository;
+    private final AccountRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional

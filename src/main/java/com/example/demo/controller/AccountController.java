@@ -1,9 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.auth.request.RegistRequest;
+import com.example.demo.dto.Account.request.ClientEdditInfoRequest;
 import com.example.demo.dto.base.BaseResponse;
-import com.example.demo.dto.client.request.ClientEdditInfoRequest;
-import com.example.demo.service.ClientService;
+import com.example.demo.dto.user.request.RegistRequest;
+import com.example.demo.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/client")
 @RequiredArgsConstructor
 @CrossOrigin("*")
-public class ClientController {
-    private final ClientService clientService;
+public class AccountController {
+    private final AccountService clientService;
     @PostMapping("/register")
     public ResponseEntity<BaseResponse> register(@RequestBody @Valid RegistRequest registRequest){
         try {

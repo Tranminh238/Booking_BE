@@ -1,4 +1,4 @@
-package com.example.demo.dto.client.request;
+package com.example.demo.dto.Account.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

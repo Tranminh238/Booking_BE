@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.auth.request.AuthRequest;
 import com.example.demo.dto.base.BaseResponse;
-import com.example.demo.service.AuthService;
+import com.example.demo.dto.user.request.AuthRequest;
+import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @CrossOrigin("*")
-public class AuthController {
-    private final AuthService authService;
+public class UserController {
+    private final UserService authService;
 
     @PostMapping("/login")
     public ResponseEntity<BaseResponse> login(@RequestBody @Valid AuthRequest request) {
