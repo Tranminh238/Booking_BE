@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RoomAmentities {
+public class RoomAmenities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

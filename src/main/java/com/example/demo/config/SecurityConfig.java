@@ -80,14 +80,13 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // Cấu hình authorization cho các endpoints
                 .authorizeHttpRequests(auth -> auth
-                        // Cho phép truy cập không cần authentication
                         .requestMatchers(
                                 "/auth/login",          
                                 "/auth/register",       
                                 "/client/register",     
-                                "/api/hotel/**"     
+                                "/api/hotel/**",
+                                "/api/room/**"     
                         ).permitAll()
 
                         // Tất cả các request còn lại cần authentication
