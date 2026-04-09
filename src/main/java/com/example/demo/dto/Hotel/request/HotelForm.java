@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class HotelForm {
     private Long id;
+    private Long userId;
     private String name;
     private Integer star;
     private Integer status;

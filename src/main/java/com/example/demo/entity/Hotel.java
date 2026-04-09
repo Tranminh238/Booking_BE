@@ -15,6 +15,7 @@ public class Hotel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long userId;
     private String name;
     private Integer star;
     private Float rating_avg;
