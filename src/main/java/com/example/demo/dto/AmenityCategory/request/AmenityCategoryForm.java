@@ -1,4 +1,4 @@
-package com.example.demo.dto.AmentityCategory.request;
+package com.example.demo.dto.AmenityCategory.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

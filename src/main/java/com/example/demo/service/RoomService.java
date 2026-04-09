@@ -9,13 +9,15 @@ import com.example.demo.repository.HotelRepository;
 import com.example.demo.repository.ImageRepository;
 import com.example.demo.repository.RoomRepository;
 import com.example.demo.repository.RoomTypeRepository;
+import com.example.demo.repository.RoomAmenitiesRepository;
+import com.example.demo.repository.RoomAvailabilityRepository;
 
 import jakarta.transaction.Transactional;
-
-import com.example.demo.repository.RoomAmenitiesRepository;
+import com.example.demo.service.RoomAvailibabilityService;
 import com.example.demo.dto.Room.request.RoomForm;
 import com.example.demo.dto.Room.response.RoomResponse;
 import com.example.demo.entity.HotelAmenities;
+import com.example.demo.entity.RoomAvailability;
 import com.example.demo.entity.Image;
 import com.example.demo.entity.Room;
 import com.example.demo.entity.RoomAmenities;
@@ -33,6 +35,8 @@ public class RoomService {
     private final AmenityRepository amenityRepository;
     private final ImageRepository imageRepository;
     private final RoomAmenitiesRepository roomAmenitiesRepository;
+    private final RoomAvailabilityRepository roomAvailabilityRepository;
+    private final RoomAvailibabilityService roomAvailibabilityService;
 
     @Transactional
     public BaseResponse createRoom(RoomForm form) {
@@ -43,6 +47,7 @@ public class RoomService {
                 .area(form.getArea())
                 .status(form.getStatus())
                 .description(form.getDescription())
+                .created_at(LocalDateTime.now())
                 .build();
         roomRepository.save(room);
 
@@ -56,6 +61,8 @@ public class RoomService {
                 roomAmenitiesRepository.save(roomAmenities);
             }
         }
+
+        roomAvailibabilityService.generateAvailabilityForRoom(room, 365);
 
         if (form.getImageUrls() != null && !form.getImageUrls().isEmpty()) {
             for (String url : form.getImageUrls()) {
@@ -71,4 +78,6 @@ public class RoomService {
 
         return new BaseResponse(200, "Success", null);
     }
+
+    
 }

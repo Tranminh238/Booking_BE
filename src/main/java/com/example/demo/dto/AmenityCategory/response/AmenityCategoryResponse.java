@@ -1,4 +1,4 @@
-package com.example.demo.dto.AmentityCategory.response;
+package com.example.demo.dto.AmenityCategory.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

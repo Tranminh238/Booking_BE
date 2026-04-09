@@ -43,6 +43,7 @@ public class HotelService {
         }
 
         Hotel hotel = Hotel.builder()
+                .userId(form.getUserId())
                 .name(form.getName())
                 .star(form.getStar() != null ? form.getStar() : 0)
                 .status(1)

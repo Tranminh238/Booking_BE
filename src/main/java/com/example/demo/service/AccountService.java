@@ -1,8 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.Account.request.ClientEdditInfoRequest;
-import com.example.demo.dto.Account.response.ClientInfoResponse;
-import com.example.demo.dto.user.request.RegistRequest;
+import com.example.demo.dto.Account.request.RegistRequest;
+import com.example.demo.dto.User.request.ClientEdditInfoRequest;
+import com.example.demo.dto.User.response.ClientInfoResponse;
 import com.example.demo.entity.User;
 import com.example.demo.entity.Account;
 import com.example.demo.exception.hotelException;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
-    private final UsersRepository clientRepository;
+    private final UsersRepository usersRepository;
     private final AccountRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -38,10 +38,33 @@ public class AccountService {
                 .firstName(registRequest.getFirstName())
                 .lastName(registRequest.getLastName())
                 .build();
-        clientRepository.save(client);
+        usersRepository.save(client);
     }
+
+    @Transactional
+    public void registerPartner(RegistRequest registRequest) {
+        if(userRepository.findByUsername(registRequest.getEmail()).isPresent()){
+            throw new hotelException("User đã tồn tại");
+        }
+        Account userEntity = Account.builder()
+                .username(registRequest.getEmail())
+                .password(passwordEncoder.encode(registRequest.getPassword()))
+                .role("PARTNER")
+                .build();
+        Account user = userRepository.save(userEntity);
+
+        User partner = User.builder()
+                .userId(user.getId())
+                .email(registRequest.getEmail())
+                .firstName(registRequest.getFirstName())
+                .lastName(registRequest.getLastName())
+                .build();
+        usersRepository.save(partner);
+    }
+
+    @Transactional
     public void editInfo(ClientEdditInfoRequest request){
-        User client = clientRepository.findById(request.getUserId())
+        User client = usersRepository.findById(request.getUserId())
                 .orElseThrow(() -> new hotelException("Client not found by id: " + request.getUserId()));
         Account user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new hotelException("User not found by id: " + request.getUserId()));
@@ -54,7 +77,7 @@ public class AccountService {
         client.setPhoneNumber(request.getPhoneNumber());
 
         userRepository.save(user);
-        clientRepository.save(client);
+        usersRepository.save(client);
     }
 
 }

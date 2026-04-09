@@ -83,8 +83,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/login",          
+                                "/auth/login-partner",       
                                 "/auth/register",       
-                                "/client/register",     
+                                "/client/register",
+                                "/client/register-partner",    
                                 "/api/hotel/**",
                                 "/api/room/**"     
                         ).permitAll()

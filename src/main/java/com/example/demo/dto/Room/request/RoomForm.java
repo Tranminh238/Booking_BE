@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -20,6 +21,7 @@ public class RoomForm {
     private Integer area;
     private Integer status;
     private String description;
+    private LocalDateTime createdAt;
     private List<Long> amenityIds;
     private List<String> imageUrls;
 }
