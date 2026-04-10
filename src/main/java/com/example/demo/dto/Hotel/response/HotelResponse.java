@@ -21,6 +21,7 @@ public class HotelResponse {
     private Integer status;
     private String description;
     private String address;
+    private String city;
     private List<String> images;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;

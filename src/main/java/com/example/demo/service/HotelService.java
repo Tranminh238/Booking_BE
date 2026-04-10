@@ -23,6 +23,9 @@ import com.example.demo.repository.HotelRepository;
 import com.example.demo.repository.ImageRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -34,12 +37,9 @@ public class HotelService {
     private final HotelAmenitiesRepository hotelAmenitiesRepository;
 
     @Transactional
-    public BaseResponse createHotel(HotelForm form) {
-        if (form.getName() == null || form.getName().trim().isEmpty()) {
-            return new BaseResponse(400, "Hotel name is required", null);
-        }
-        if (hotelRepository.existsByName(form.getName())) {
-            return new BaseResponse(400, "Hotel name already exists", null);
+    public void  createHotel(HotelForm form) {
+        if(hotelRepository.existsByName(form.getName())){
+            throw new RuntimeException("Tên khách sạn đã tồn tại");
         }
 
         Hotel hotel = Hotel.builder()
@@ -84,8 +84,6 @@ public class HotelService {
                 imageRepository.save(image);
             }
         }
-
-        return new BaseResponse(200, "Hotel created successfully", mapToResponse(hotel));
     }
 
     @Transactional
@@ -136,29 +134,32 @@ public class HotelService {
     }
 
     @Transactional
-    public BaseResponse deleteHotel(Long hotelId) {
+    public void deleteHotel(Long hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new RuntimeException("Hotel not found"));
-
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
         hotel.setStatus(0);
         hotelRepository.save(hotel);
-
-        return new BaseResponse(200, "Hotel deleted successfully", null);
     }
 
     @Transactional
-    public BaseResponse getAllHotels() {
-        List<HotelResponse> result = hotelRepository.findHotelactive()
+    public Page<Hotel> getAllHotels(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Hotel> result = hotelRepository.findHotelactive(pageable);
+        return result;
+    }
+
+    public Page<Hotel> getHotelByCity(String city, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Hotel> result = hotelRepository.findHotelByCity(city, pageable);
+        return result;
+    }
+
+    public List<HotelResponse> getHotelByUserId(Long userId) {
+        List<HotelResponse> result = hotelRepository.findHotelByUserId(userId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-        return new BaseResponse(200, "Success", result);
-    }
-
-    public BaseResponse getHotelById(Long id) {
-        Hotel hotel = hotelRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Hotel not found"));
-        return new BaseResponse(200, "Success", mapToResponse(hotel));
+        return result;
     }
 
     private HotelResponse mapToResponse(Hotel hotel) {
