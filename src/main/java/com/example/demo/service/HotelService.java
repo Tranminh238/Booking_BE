@@ -37,8 +37,8 @@ public class HotelService {
     private final HotelAmenitiesRepository hotelAmenitiesRepository;
 
     @Transactional
-    public void  createHotel(HotelForm form) {
-        if(hotelRepository.existsByName(form.getName())){
+    public void createHotel(HotelForm form) {
+        if (hotelRepository.existsByName(form.getName())) {
             throw new RuntimeException("Tên khách sạn đã tồn tại");
         }
 
@@ -100,9 +100,12 @@ public class HotelService {
             hotel.setName(form.getName());
         }
 
-        if (form.getStar() != null) hotel.setStar(form.getStar());
-        if (form.getStatus() != null) hotel.setStatus(form.getStatus());
-        if (form.getDescription() != null) hotel.setDescription(form.getDescription());
+        if (form.getStar() != null)
+            hotel.setStar(form.getStar());
+        if (form.getStatus() != null)
+            hotel.setStatus(form.getStatus());
+        if (form.getDescription() != null)
+            hotel.setDescription(form.getDescription());
         hotel.setUpdated_at(LocalDateTime.now());
         hotelRepository.save(hotel);
 
@@ -110,9 +113,12 @@ public class HotelService {
         if (form.getDistrict() != null || form.getCity() != null || form.getCountry() != null) {
             HotelAddress address = hotelAddressRepository.findByHotelId(hotel.getId())
                     .orElse(HotelAddress.builder().hotelId(hotel.getId()).build());
-            if (form.getDistrict() != null) address.setDistrict(form.getDistrict());
-            if (form.getCity() != null) address.setCity(form.getCity());
-            if (form.getCountry() != null) address.setCountry(form.getCountry());
+            if (form.getDistrict() != null)
+                address.setDistrict(form.getDistrict());
+            if (form.getCity() != null)
+                address.setCity(form.getCity());
+            if (form.getCountry() != null)
+                address.setCountry(form.getCountry());
             hotelAddressRepository.save(address);
         }
 
@@ -148,17 +154,14 @@ public class HotelService {
         return result;
     }
 
-    public Page<Hotel> getHotelByCity(String city, int page) {
-        Pageable pageable = PageRequest.of(page, 10);
+    public Page<Hotel> getHotelByCity(String city, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> result = hotelRepository.findHotelByCity(city, pageable);
         return result;
     }
 
-    public List<HotelResponse> getHotelByUserId(Long userId) {
-        List<HotelResponse> result = hotelRepository.findHotelByUserId(userId)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public List<Hotel> getHotelByUserId(Long userId) {
+        List<Hotel> result = hotelRepository.findHotelByUserId(userId);
         return result;
     }
 
