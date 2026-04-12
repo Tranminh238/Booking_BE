@@ -13,27 +13,23 @@ import lombok.RequiredArgsConstructor;
 public class AmenityService {
     private final AmenityRepository amenityRepository;
 
-    public BaseResponse getAllAmenity() {
-        List<AmenityResponse> result = amenityRepository.findAll()
-                .stream()
+    public List<AmenityResponse> getAmenityByType(String type) {
+        List<Amenity> list;
+        if (type == null || type.trim().isEmpty()) {
+            list = amenityRepository.findAll();
+        } else {
+            list = amenityRepository.findByType(type);
+        }
+        return list.stream()
                 .map(this::mapToResponse)
                 .toList();
-        return new BaseResponse(200, "Success", result);
-    }
-
-    public BaseResponse getAmenityByCategoryId(Long categoryId) {
-        List<AmenityResponse> result = amenityRepository.findByCategoryId(categoryId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-        return new BaseResponse(200, "Success", result);
     }
 
     private AmenityResponse mapToResponse(Amenity entity) {
         return AmenityResponse.builder()
                 .id(entity.getId())
                 .name(entity.getName())
-                .categoryId(entity.getCategoryId())
+                .type(entity.getType())
                 .build();
     }
 }

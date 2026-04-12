@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
+import java.sql.Time;
 
 
 @Data
@@ -22,7 +23,12 @@ public class HotelResponse {
     private String description;
     private String address;
     private String city;
+    private Time checkin_time_start;
+    private Time checkin_time_end;
+    private Time checkout_time_start;
+    private Time checkout_time_end;
     private List<String> images;
+    private List<String> policy_url;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
 }

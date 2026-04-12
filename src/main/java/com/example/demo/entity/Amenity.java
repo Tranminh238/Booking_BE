@@ -13,6 +13,6 @@ public class Amenity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long categoryId;
     private String name;
+    private String type;
 }

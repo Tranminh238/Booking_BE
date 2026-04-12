@@ -21,9 +21,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     @Query("SELECT h FROM Hotel h WHERE h.userId = :userId")
     List<Hotel> findHotelByUserId(Long userId);
 
-    @Query("SELECT h FROM Hotel h WHERE h.userId = :userId")
-    List<Hotel> findHotelByUserId(Long userId, Pageable pageable);
-
     @Query("SELECT h FROM Hotel h JOIN HotelAddress ha ON h.id = ha.hotelId WHERE ha.city = :city AND h.status = 1")
     Page<Hotel> findHotelByCity(@Param("city") String city, Pageable pageable);
 

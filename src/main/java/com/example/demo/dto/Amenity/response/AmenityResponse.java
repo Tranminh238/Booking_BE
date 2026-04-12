@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class AmenityResponse {
     private Long id;
     private String name;
-    private Long categoryId;
+    private String type;
 }

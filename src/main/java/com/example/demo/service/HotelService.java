@@ -2,13 +2,14 @@ package com.example.demo.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.Util.FileUpLoadUtil;
+import com.example.demo.dto.CloudinaryResponse;
 import com.example.demo.dto.Hotel.request.HotelForm;
 import com.example.demo.dto.Hotel.response.HotelResponse;
 import com.example.demo.dto.base.BaseResponse;
@@ -35,9 +36,10 @@ public class HotelService {
     private final HotelAddressRepository hotelAddressRepository;
     private final ImageRepository imageRepository;
     private final HotelAmenitiesRepository hotelAmenitiesRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Transactional
-    public void createHotel(HotelForm form) {
+    public void createHotel(HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
         if (hotelRepository.existsByName(form.getName())) {
             throw new RuntimeException("Tên khách sạn đã tồn tại");
         }
@@ -48,6 +50,10 @@ public class HotelService {
                 .star(form.getStar() != null ? form.getStar() : 0)
                 .status(1)
                 .description(form.getDescription())
+                .checkin_time_start(form.getCheckin_time_start())
+                .checkin_time_end(form.getCheckin_time_end())
+                .checkout_time_start(form.getCheckout_time_start())
+                .checkout_time_end(form.getCheckout_time_end())
                 .created_at(LocalDateTime.now())
                 .updated_at(LocalDateTime.now())
                 .build();
@@ -63,6 +69,7 @@ public class HotelService {
                     .build();
             hotelAddressRepository.save(address);
         }
+
         if (form.getAmenityIds() != null && !form.getAmenityIds().isEmpty()) {
             for (Long amenityId : form.getAmenityIds()) {
                 HotelAmenities ha = HotelAmenities.builder()
@@ -72,22 +79,43 @@ public class HotelService {
                 hotelAmenitiesRepository.save(ha);
             }
         }
-        // Lưu ảnh
-        if (form.getImageUrls() != null && !form.getImageUrls().isEmpty()) {
-            for (String url : form.getImageUrls()) {
+
+        // Upload ảnh lên Cloudinary
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (MultipartFile file : imageFiles) {
+                if (file == null || file.isEmpty()) continue;
+                FileUpLoadUtil.assertAllowedExtention(file, FileUpLoadUtil.IMAGE_PATTERN);
+                String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_" + hotel.getId() + "_" + fileName);
                 Image image = Image.builder()
                         .refId(hotel.getId())
                         .refType(RefType.HOTEL)
-                        .imageUrl(url)
+                        .imageUrl(uploaded.getUrl())
                         .createAt(LocalDateTime.now())
                         .build();
                 imageRepository.save(image);
             }
         }
+
+        // Upload policy files lên Cloudinary
+        if (policyFiles != null && !policyFiles.isEmpty()) {
+            for (MultipartFile file : policyFiles) {
+                if (file == null || file.isEmpty()) continue;
+                String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_policy_" + hotel.getId() + "_" + fileName);
+                Image policyImg = Image.builder()
+                        .refId(hotel.getId())
+                        .refType(RefType.POLICY)
+                        .imageUrl(uploaded.getUrl())
+                        .createAt(LocalDateTime.now())
+                        .build();
+                imageRepository.save(policyImg);
+            }
+        }
     }
 
     @Transactional
-    public BaseResponse updateHotel(Long id, HotelForm form) {
+    public BaseResponse updateHotel(Long id, HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
 
         Hotel hotel = hotelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hotel not found"));
@@ -122,17 +150,38 @@ public class HotelService {
             hotelAddressRepository.save(address);
         }
 
-        // Cập nhật ảnh: xóa cũ → thêm mới
-        if (form.getImageUrls() != null) {
+        // Cập nhật ảnh: xóa cũ → upload & thêm mới
+        if (imageFiles != null && !imageFiles.isEmpty()) {
             imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.HOTEL);
-            for (String url : form.getImageUrls()) {
+            for (MultipartFile file : imageFiles) {
+                if (file == null || file.isEmpty()) continue;
+                FileUpLoadUtil.assertAllowedExtention(file, FileUpLoadUtil.IMAGE_PATTERN);
+                String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_" + hotel.getId() + "_" + fileName);
                 Image image = Image.builder()
                         .refId(hotel.getId())
                         .refType(RefType.HOTEL)
-                        .imageUrl(url)
+                        .imageUrl(uploaded.getUrl())
                         .createAt(LocalDateTime.now())
                         .build();
                 imageRepository.save(image);
+            }
+        }
+
+        // Cập nhật policy files: xóa cũ → upload & thêm mới
+        if (policyFiles != null && !policyFiles.isEmpty()) {
+            imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.POLICY);
+            for (MultipartFile file : policyFiles) {
+                if (file == null || file.isEmpty()) continue;
+                String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_policy_" + hotel.getId() + "_" + fileName);
+                Image policyImg = Image.builder()
+                        .refId(hotel.getId())
+                        .refType(RefType.POLICY)
+                        .imageUrl(uploaded.getUrl())
+                        .createAt(LocalDateTime.now())
+                        .build();
+                imageRepository.save(policyImg);
             }
         }
 
@@ -148,21 +197,31 @@ public class HotelService {
     }
 
     @Transactional
-    public Page<Hotel> getAllHotels(int page, int size) {
+    public Page<HotelResponse> getAllHotels(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> result = hotelRepository.findHotelactive(pageable);
-        return result;
+        return result.map(this::mapToResponse);
     }
 
-    public Page<Hotel> getHotelByCity(String city, int page, int size) {
+    public Page<HotelResponse> getHotelByCity(String city, int page, int size) {
+        if (city == null || city.trim().isEmpty()) {
+            throw new IllegalArgumentException("City không được để trống");
+        }
+        String normalizedCity = city.trim().toLowerCase();
         Pageable pageable = PageRequest.of(page, size);
-        Page<Hotel> result = hotelRepository.findHotelByCity(city, pageable);
-        return result;
+        Page<Hotel> result = hotelRepository.findHotelByCity(normalizedCity, pageable);
+        return result.map(this::mapToResponse);
     }
 
-    public List<Hotel> getHotelByUserId(Long userId) {
+    public List<HotelResponse> getHotelByUserId(Long userId) {
         List<Hotel> result = hotelRepository.findHotelByUserId(userId);
-        return result;
+        return result.stream().map(this::mapToResponse).toList();
+    }
+
+    public HotelResponse getHotelDetail(Long hotelId) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
+        return mapToResponse(hotel);
     }
 
     private HotelResponse mapToResponse(Hotel hotel) {
@@ -171,6 +230,11 @@ public class HotelService {
                 .orElse(null);
 
         List<String> images = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.HOTEL)
+                .stream()
+                .map(Image::getImageUrl)
+                .collect(Collectors.toList());
+
+        List<String> policyUrls = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.POLICY)
                 .stream()
                 .map(Image::getImageUrl)
                 .collect(Collectors.toList());
@@ -184,6 +248,11 @@ public class HotelService {
                 .description(hotel.getDescription())
                 .address(address)
                 .images(images)
+                .policy_url(policyUrls)
+                .checkin_time_start(hotel.getCheckin_time_start())
+                .checkin_time_end(hotel.getCheckin_time_end())
+                .checkout_time_start(hotel.getCheckout_time_start())
+                .checkout_time_end(hotel.getCheckout_time_end())
                 .created_at(hotel.getCreated_at())
                 .updated_at(hotel.getUpdated_at())
                 .build();

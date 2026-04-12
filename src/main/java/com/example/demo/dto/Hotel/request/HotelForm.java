@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
+import java.sql.Time;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 @Builder
@@ -12,14 +14,34 @@ import java.util.List;
 @AllArgsConstructor
 public class HotelForm {
     private Long id;
+    @NotNull
     private Long userId;
+    @NotNull
     private String name;
+    @NotNull
     private Integer star;
+    @NotNull
     private Integer status;
+    @NotNull
+    private Time checkin_time_start;
+    @NotNull
+    private Time checkin_time_end;
+    @NotNull
+    private Time checkout_time_start;
+    @NotNull
+    private Time checkout_time_end;
+    
     private String description;
+    @NotNull
+    private List<String> policy_url;
+
     private List<Long> amenityIds;
-    private List<String> imageUrls;
+    @NotNull
+    private List<String> images;
+    @NotNull
     private String district;
+    @NotNull
     private String city;
+    @NotNull
     private String country;
 }
