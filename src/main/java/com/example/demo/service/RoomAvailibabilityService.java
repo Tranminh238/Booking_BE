@@ -37,7 +37,6 @@ public class RoomAvailibabilityService {
                 list.add(ra);
             }
         }
-
         availabilityRepository.saveAll(list);
     }
 

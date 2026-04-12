@@ -14,6 +14,8 @@ public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long hotelId;
+    private Long roomTypeId;
     private Integer pricePerNight;
     private Integer capacity;
     private Integer quantity;

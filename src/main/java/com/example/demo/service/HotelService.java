@@ -188,6 +188,14 @@ public class HotelService {
         return new BaseResponse(200, "Hotel updated successfully", mapToResponse(hotel));
     }
 
+    public BaseResponse browseHotel(Long hotelId) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
+        hotel.setStatus(2);
+        hotelRepository.save(hotel);
+        return new BaseResponse(200, "Hotel browsed successfully", mapToResponse(hotel));
+    }
+
     @Transactional
     public void deleteHotel(Long hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
