@@ -15,13 +15,19 @@ import org.springframework.data.repository.query.Param;
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
     boolean existsByName(String name);
 
-    @Query("SELECT h FROM Hotel h WHERE h.status = 1")
+    @Query("SELECT h FROM Hotel h WHERE h.status = 2")
     Page<Hotel> findHotelactive(Pageable pageable);
 
-    @Query("SELECT h FROM Hotel h WHERE h.userId = :userId")
-    List<Hotel> findHotelByUserId(Long userId);
+    @Query("SELECT h FROM Hotel h WHERE h.userId = :userId AND h.status = 1")
+    List<Hotel> findHotelWaitByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT h FROM Hotel h JOIN HotelAddress ha ON h.id = ha.hotelId WHERE ha.city = :city AND h.status = 1")
+    @Query("SELECT h FROM Hotel h WHERE h.userId = :userId AND h.status = 2")
+    List<Hotel> findHotelActiveByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT h FROM Hotel h WHERE h.userId = :userId AND h.status = 0")
+    List<Hotel> findHotelDeletedByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT h FROM Hotel h JOIN HotelAddress ha ON h.id = ha.hotelId WHERE ha.city = :city AND h.status = 2")
     Page<Hotel> findHotelByCity(@Param("city") String city, Pageable pageable);
 
 }

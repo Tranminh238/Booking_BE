@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface HotelAddressRepository extends JpaRepository<HotelAddress, Long> {
+    
     List<HotelAddress> findAll();
     boolean existsByDistrictAndCityAndCountry(String district, String city, String country);
     Optional<HotelAddress> findByHotelId(Long hotelId);

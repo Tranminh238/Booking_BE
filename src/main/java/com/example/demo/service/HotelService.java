@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,16 +51,15 @@ public class HotelService {
                 .star(form.getStar() != null ? form.getStar() : 0)
                 .status(1)
                 .description(form.getDescription())
-                .checkin_time_start(form.getCheckin_time_start())
-                .checkin_time_end(form.getCheckin_time_end())
-                .checkout_time_start(form.getCheckout_time_start())
-                .checkout_time_end(form.getCheckout_time_end())
+                .checkin_time_start(parseTime(form.getCheckin_time_start()))
+                .checkin_time_end(parseTime(form.getCheckin_time_end()))
+                .checkout_time_start(parseTime(form.getCheckout_time_start()))
+                .checkout_time_end(parseTime(form.getCheckout_time_end()))
                 .created_at(LocalDateTime.now())
                 .updated_at(LocalDateTime.now())
                 .build();
         hotelRepository.save(hotel);
 
-        // Lưu địa chỉ
         if (form.getDistrict() != null || form.getCity() != null || form.getCountry() != null) {
             HotelAddress address = HotelAddress.builder()
                     .hotelId(hotel.getId())
@@ -221,8 +221,18 @@ public class HotelService {
         return result.map(this::mapToResponse);
     }
 
-    public List<HotelResponse> getHotelByUserId(Long userId) {
-        List<Hotel> result = hotelRepository.findHotelByUserId(userId);
+    public List<HotelResponse> getHotelWaitByUserId(Long userId) {
+        List<Hotel> result = hotelRepository.findHotelWaitByUserId(userId);
+        return result.stream().map(this::mapToResponse).toList();
+    }
+
+    public List<HotelResponse> getHotelActiveByUserId(Long userId) {
+        List<Hotel> result = hotelRepository.findHotelActiveByUserId(userId);
+        return result.stream().map(this::mapToResponse).toList();
+    }
+
+    public List<HotelResponse> getHotelDeletedByUserId(Long userId) {
+        List<Hotel> result = hotelRepository.findHotelDeletedByUserId(userId);
         return result.stream().map(this::mapToResponse).toList();
     }
 
@@ -266,4 +276,13 @@ public class HotelService {
                 .build();
     }
 
+    private Time parseTime(String time) {
+        if (time == null || time.trim().isEmpty()) {
+            return null;
+        }
+        if (time.length() == 5) {
+            time += ":00";
+        }
+        return Time.valueOf(time);
+    }
 }

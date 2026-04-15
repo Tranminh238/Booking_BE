@@ -25,10 +25,10 @@ public class HotelController {
             @RequestParam String name,
             @RequestParam(required = false) Integer star,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) Time checkin_time_start,
-            @RequestParam(required = false) Time checkin_time_end,
-            @RequestParam(required = false) Time checkout_time_start,
-            @RequestParam(required = false) Time checkout_time_end,
+            @RequestParam(required = false) String checkin_time_start,
+            @RequestParam(required = false) String checkin_time_end,
+            @RequestParam(required = false) String checkout_time_start,
+            @RequestParam(required = false) String checkout_time_end,
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String country,
@@ -65,10 +65,10 @@ public class HotelController {
             @RequestParam(required = false) Integer star,
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) Time checkin_time_start,
-            @RequestParam(required = false) Time checkin_time_end,
-            @RequestParam(required = false) Time checkout_time_start,
-            @RequestParam(required = false) Time checkout_time_end,
+            @RequestParam(required = false) String checkin_time_start,
+            @RequestParam(required = false) String checkin_time_end,
+            @RequestParam(required = false) String checkout_time_start,
+            @RequestParam(required = false) String checkout_time_end,
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String country,
@@ -121,10 +121,30 @@ public class HotelController {
         }
     }
 
-    @GetMapping("/getbyuserid/{userId}")
-    public ResponseEntity<BaseResponse> getHotelByUserId(@PathVariable Long userId) {
+    @GetMapping("/gethotelwaitbyuserid/{userId}")
+    public ResponseEntity<BaseResponse> getHotelWaitByUserId(@PathVariable Long userId) {
         try {
-            List<HotelResponse> result = hotelService.getHotelByUserId(userId);
+            List<HotelResponse> result = hotelService.getHotelWaitByUserId(userId);
+            return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/gethotelactivebyuserid/{userId}")
+    public ResponseEntity<BaseResponse> getHotelActiveByUserId(@PathVariable Long userId) {
+        try {
+            List<HotelResponse> result = hotelService.getHotelActiveByUserId(userId);
+            return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/gethoteldeletedbyuserid/{userId}")
+    public ResponseEntity<BaseResponse> getHotelDeletedByUserId(@PathVariable Long userId) {
+        try {
+            List<HotelResponse> result = hotelService.getHotelDeletedByUserId(userId);
             return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));

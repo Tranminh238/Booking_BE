@@ -153,6 +153,8 @@ public class RoomService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
         room.setStatus(0);
+        room.setUpdated_at(LocalDateTime.now());
+        roomAvailabilityRepository.deleteByRoomId(roomId);
         roomRepository.save(room);
     }
 

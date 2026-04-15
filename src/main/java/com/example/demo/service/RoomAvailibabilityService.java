@@ -53,4 +53,9 @@ public class RoomAvailibabilityService {
             availabilityRepository.save(ra);
         }
     }
+
+    @Transactional
+    public void deleteByRoomId(Long roomId) {
+        availabilityRepository.deleteByRoomId(roomId);
+    }
 }

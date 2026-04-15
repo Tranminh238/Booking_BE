@@ -6,7 +6,6 @@ import com.example.demo.dto.base.BaseResponse;
 import com.example.demo.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

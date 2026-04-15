@@ -23,13 +23,13 @@ public class HotelForm {
     @NotNull
     private Integer status;
     @NotNull
-    private Time checkin_time_start;
+    private String checkin_time_start;
     @NotNull
-    private Time checkin_time_end;
+    private String checkin_time_end;
     @NotNull
-    private Time checkout_time_start;
+    private String checkout_time_start;
     @NotNull
-    private Time checkout_time_end;
+    private String checkout_time_end;
     
     private String description;
     @NotNull
