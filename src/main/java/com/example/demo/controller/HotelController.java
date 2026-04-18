@@ -34,8 +34,7 @@ public class HotelController {
             @RequestParam(required = false) String country,
             @RequestParam(required = false) List<Long> amenityIds,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles
-    ) {
+            @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles) {
         try {
             HotelForm form = HotelForm.builder()
                     .userId(userId)
@@ -74,8 +73,7 @@ public class HotelController {
             @RequestParam(required = false) String country,
             @RequestParam(required = false) List<Long> amenityIds,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles
-    ) {
+            @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles) {
         try {
             HotelForm form = HotelForm.builder()
                     .name(name)
@@ -111,8 +109,7 @@ public class HotelController {
     @GetMapping("/getall")
     public ResponseEntity<BaseResponse> getAllHotels(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         try {
             Page<HotelResponse> result = hotelService.getAllHotels(page, size);
             return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
@@ -155,8 +152,7 @@ public class HotelController {
     public ResponseEntity<BaseResponse> getHotelByCity(
             @PathVariable String city,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         try {
             Page<HotelResponse> result = hotelService.getHotelByCity(city, page, size);
             return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));

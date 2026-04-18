@@ -27,15 +27,12 @@ public class RoomAvailibabilityService {
         for (int i = 0; i < days; i++) {
             LocalDate date = today.plusDays(i);
 
-            // tránh duplicate
-            if (!availabilityRepository.existsByRoomIdAndDate(room.getId(), date)) {
-                RoomAvailability ra = new RoomAvailability();
-                ra.setRoomId(room.getId());
-                ra.setDate(date);
-                ra.setQuantityAvailable(room.getQuantity()); // tổng số phòng
+            RoomAvailability ra = new RoomAvailability();
+            ra.setRoomId(room.getId());
+            ra.setDate(date);
+            ra.setQuantityAvailable(room.getQuantity());
 
-                list.add(ra);
-            }
+            list.add(ra);
         }
         availabilityRepository.saveAll(list);
     }

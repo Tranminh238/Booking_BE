@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
     boolean existsByName(String name);
 
-    @Query("SELECT h FROM Hotel h WHERE h.status = 2")
+    @Query("SELECT h FROM Hotel h JOIN HotelAddress ha ON h.id = ha.hotelId WHERE h.status = 2")
     Page<Hotel> findHotelactive(Pageable pageable);
 
     @Query("SELECT h FROM Hotel h WHERE h.userId = :userId AND h.status = 1")

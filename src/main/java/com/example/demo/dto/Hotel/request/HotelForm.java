@@ -34,7 +34,7 @@ public class HotelForm {
     private String description;
     @NotNull
     private List<String> policy_url;
-
+    
     private List<Long> amenityIds;
     @NotNull
     private List<String> images;

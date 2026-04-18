@@ -21,6 +21,7 @@ public class Room {
     private Integer quantity;
     private Integer area;
     private Integer status;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;

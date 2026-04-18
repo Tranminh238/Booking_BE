@@ -88,7 +88,8 @@ public class SecurityConfig {
                                 "/client/register-partner",    
                                 "/api/hotel/**",
                                 "/api/room/**",
-                                "/api/amenities/**"     
+                                "/api/amenities/**",
+                                "/api/booking/**" 
                         ).permitAll()
 
                         // Tất cả các request còn lại cần authentication

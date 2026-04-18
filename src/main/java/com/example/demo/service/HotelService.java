@@ -103,13 +103,8 @@ public class HotelService {
                 if (file == null || file.isEmpty()) continue;
                 String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
                 CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_policy_" + hotel.getId() + "_" + fileName);
-                Image policyImg = Image.builder()
-                        .refId(hotel.getId())
-                        .refType(RefType.POLICY)
-                        .imageUrl(uploaded.getUrl())
-                        .createAt(LocalDateTime.now())
-                        .build();
-                imageRepository.save(policyImg);
+                hotel.setPolicy_url(uploaded.getUrl());
+                hotelRepository.save(hotel);
             }
         }
     }
@@ -257,6 +252,8 @@ public class HotelService {
                 .map(Image::getImageUrl)
                 .collect(Collectors.toList());
 
+        List<String> amenities = hotelAmenitiesRepository.findAmenityNamesByHotelId(hotel.getId());
+
         return HotelResponse.builder()
                 .id(hotel.getId())
                 .name(hotel.getName())
@@ -267,6 +264,7 @@ public class HotelService {
                 .address(address)
                 .images(images)
                 .policy_url(policyUrls)
+                .amenities(amenities)
                 .checkin_time_start(hotel.getCheckin_time_start())
                 .checkin_time_end(hotel.getCheckin_time_end())
                 .checkout_time_start(hotel.getCheckout_time_start())

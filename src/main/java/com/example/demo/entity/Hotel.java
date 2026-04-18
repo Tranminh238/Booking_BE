@@ -25,6 +25,7 @@ public class Hotel {
     private Time checkin_time_end;
     private Time checkout_time_start;
     private Time checkout_time_end;
+    private String policy_url;
     @Column(columnDefinition = "TEXT")
     private String description;
     private LocalDateTime created_at;

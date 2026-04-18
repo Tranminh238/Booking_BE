@@ -29,6 +29,7 @@ public class HotelResponse {
     private Time checkout_time_end;
     private List<String> images;
     private List<String> policy_url;
+    private List<String> amenities;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
 }

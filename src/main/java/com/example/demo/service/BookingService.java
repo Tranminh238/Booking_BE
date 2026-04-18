@@ -15,10 +15,12 @@ import com.example.demo.entity.Booking;
 import com.example.demo.entity.BookingDetail;
 import com.example.demo.entity.Room;
 import com.example.demo.entity.RoomAvailability;
+import com.example.demo.entity.Payment;
 import com.example.demo.repository.BookingDetailRepository;
 import com.example.demo.repository.BookingRepository;
 import com.example.demo.repository.RoomAvailabilityRepository;
 import com.example.demo.repository.RoomRepository;
+import com.example.demo.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,22 +33,8 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final RoomAvailabilityRepository roomAvailabilityRepository;
 
-    // ─────────────────────────────────────────────
-    // Booking Status constants
-    // 0 = cancelled | 1 = pending | 2 = confirmed
-    // 3 = checked_in | 4 = completed
-    // ─────────────────────────────────────────────
-
-    /**
-     * Tạo booking mới:
-     * 1. Validate ngày & phòng còn trống
-     * 2. Tạo Booking (status = PENDING)
-     * 3. Tạo BookingDetail
-     * 4. Giảm quantityAvailable trong RoomAvailability
-     */
     @Transactional
     public BookingResponse createBooking(BookingRequest req) {
-        // --- 1. Validate ngày ---
         if (req.getCheckInDate() == null || req.getCheckOutDate() == null) {
             throw new IllegalArgumentException("Ngày check-in và check-out không được để trống");
         }
@@ -57,7 +45,6 @@ public class BookingService {
             throw new IllegalArgumentException("Ngày check-in không được là ngày trong quá khứ");
         }
 
-        // --- 2. Validate phòng tồn tại ---
         Room room = roomRepository.findById(req.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Phòng không tồn tại: id=" + req.getRoomId()));
 
@@ -67,7 +54,6 @@ public class BookingService {
 
         int numRoom = req.getNumRoom() != null ? req.getNumRoom() : 1;
 
-        // --- 3. Kiểm tra availability ---
         long unavailableDays = roomAvailabilityRepository.countUnavailableDays(
                 req.getRoomId(),
                 req.getCheckInDate(),
@@ -78,7 +64,6 @@ public class BookingService {
             throw new RuntimeException("Phòng không đủ số lượng trong khoảng ngày đã chọn");
         }
 
-        // --- 4. Tính tổng tiền nếu chưa có ---
         long nights = req.getCheckInDate().toEpochDay() - LocalDate.now().toEpochDay();
         long totalNights = req.getCheckOutDate().toEpochDay() - req.getCheckInDate().toEpochDay();
         int pricePerNight = req.getPricePerNight() != null
@@ -88,7 +73,6 @@ public class BookingService {
                 ? req.getTotalPrice()
                 : (int) (pricePerNight * numRoom * totalNights);
 
-        // --- 5. Lưu Booking ---
         Booking booking = Booking.builder()
                 .userId(req.getUserId())
                 .roomId(req.getRoomId())
@@ -100,6 +84,15 @@ public class BookingService {
                 .updatedAt(LocalDateTime.now())
                 .build();
         booking = bookingRepository.save(booking);
+
+        Payment payment = Payment.builder()
+                .bookingId(booking.getId())
+                .amount(totalPrice)
+                .status(1) // PENDING
+                .paymentMethod("VnPay")
+                .createdAt(LocalDateTime.now())
+                .build();
+        
 
         // --- 6. Lưu BookingDetail ---
         BookingDetail detail = BookingDetail.builder()
@@ -114,7 +107,6 @@ public class BookingService {
                 .build();
         bookingDetailRepository.save(detail);
 
-        // --- 7. Giảm quantityAvailable trong RoomAvailability ---
         decreaseAvailability(req.getRoomId(), req.getCheckInDate(), req.getCheckOutDate(), numRoom);
 
         return mapToResponse(booking, List.of(detail));
@@ -128,9 +120,7 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Lấy chi tiết một booking theo id.
-     */
+
     public BookingResponse getBookingById(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại: id=" + bookingId));
@@ -138,10 +128,7 @@ public class BookingService {
         return mapToResponse(booking, details);
     }
 
-    /**
-     * Xác nhận booking (PENDING → CONFIRMED).
-     * Thường do partner/admin gọi sau khi nhận được thanh toán.
-     */
+    
     @Transactional
     public BookingResponse confirmBooking(Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
@@ -154,9 +141,7 @@ public class BookingService {
         return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
     }
 
-    /**
-     * Check-in: CONFIRMED → CHECKED_IN.
-     */
+
     @Transactional
     public BookingResponse checkIn(Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
@@ -169,9 +154,7 @@ public class BookingService {
         return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
     }
 
-    /**
-     * Check-out / hoàn thành booking: CHECKED_IN → COMPLETED.
-     */
+
     @Transactional
     public BookingResponse checkOut(Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
@@ -184,10 +167,7 @@ public class BookingService {
         return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
     }
 
-    /**
-     * Hủy booking: chỉ hủy được khi PENDING hoặc CONFIRMED.
-     * Hoàn trả lại quantityAvailable trong RoomAvailability.
-     */
+
     @Transactional
     public BookingResponse cancelBooking(Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
@@ -212,9 +192,17 @@ public class BookingService {
         return mapToResponse(booking, details);
     }
 
-    /**
-     * Cập nhật trạng thái booking thủ công (admin).
-     */
+    public void payment(boolean isPaid, Long bookingId) {
+        Booking booking = findBookingOrThrow(bookingId);
+        if (isPaid) {
+            booking.setStatus(2); // CONFIRMED
+        } else {
+            booking.setStatus(0); // CANCELLED
+        }
+        booking.setUpdatedAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+    }
+
     @Transactional
     public BookingResponse updateStatus(Long bookingId, Integer newStatus) {
         Booking booking = findBookingOrThrow(bookingId);
@@ -224,18 +212,11 @@ public class BookingService {
         return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
     }
 
-    // ─────────────────────────────────────────────
-    // Private helper methods
-    // ─────────────────────────────────────────────
-
     private Booking findBookingOrThrow(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại: id=" + bookingId));
     }
 
-    /**
-     * Giảm quantityAvailable cho từng ngày trong khoảng [checkIn, checkOut).
-     */
     private void decreaseAvailability(Long roomId, LocalDate checkIn, LocalDate checkOut, int numRoom) {
         List<RoomAvailability> slots = roomAvailabilityRepository
                 .findByRoomIdAndDateBetween(roomId, checkIn, checkOut.minusDays(1));
@@ -248,9 +229,6 @@ public class BookingService {
         roomAvailabilityRepository.saveAll(slots);
     }
 
-    /**
-     * Tăng quantityAvailable (dùng khi hủy booking).
-     */
     private void increaseAvailability(Long roomId, LocalDate checkIn, LocalDate checkOut, Integer numRoom) {
         if (numRoom == null || numRoom <= 0) return;
 
@@ -267,9 +245,7 @@ public class BookingService {
         roomAvailabilityRepository.saveAll(slots);
     }
 
-    /**
-     * Map Booking + danh sách BookingDetail → BookingResponse.
-     */
+
     private BookingResponse mapToResponse(Booking booking, List<BookingDetail> details) {
         List<BookingDetailResponse> detailResponses = details.stream()
                 .map(d -> BookingDetailResponse.builder()
