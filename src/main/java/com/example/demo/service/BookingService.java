@@ -32,6 +32,7 @@ public class BookingService {
     private final BookingDetailRepository bookingDetailRepository;
     private final RoomRepository roomRepository;
     private final RoomAvailabilityRepository roomAvailabilityRepository;
+    private final PaymentRepository paymentRepository;
 
     @Transactional
     public BookingResponse createBooking(BookingRequest req) {
@@ -88,13 +89,13 @@ public class BookingService {
         Payment payment = Payment.builder()
                 .bookingId(booking.getId())
                 .amount(totalPrice)
-                .status(1) // PENDING
+                .status(1) 
                 .paymentMethod("VnPay")
                 .createdAt(LocalDateTime.now())
                 .build();
+        paymentRepository.save(payment);
         
 
-        // --- 6. Lưu BookingDetail ---
         BookingDetail detail = BookingDetail.builder()
                 .bookingId(booking.getId())
                 .roomId(req.getRoomId())
@@ -135,37 +136,12 @@ public class BookingService {
         if (booking.getStatus() != 1) {
             throw new IllegalStateException("Chỉ có thể xác nhận booking ở trạng thái PENDING");
         }
-        booking.setStatus(2); // CONFIRMED
+        booking.setStatus(2); 
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
         return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
     }
 
-
-    @Transactional
-    public BookingResponse checkIn(Long bookingId) {
-        Booking booking = findBookingOrThrow(bookingId);
-        if (booking.getStatus() != 2) {
-            throw new IllegalStateException("Chỉ có thể check-in khi booking đã được CONFIRMED");
-        }
-        booking.setStatus(3); // CHECKED_IN
-        booking.setUpdatedAt(LocalDateTime.now());
-        bookingRepository.save(booking);
-        return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
-    }
-
-
-    @Transactional
-    public BookingResponse checkOut(Long bookingId) {
-        Booking booking = findBookingOrThrow(bookingId);
-        if (booking.getStatus() != 3) {
-            throw new IllegalStateException("Chỉ có thể check-out khi booking đang ở trạng thái CHECKED_IN");
-        }
-        booking.setStatus(4); // COMPLETED
-        booking.setUpdatedAt(LocalDateTime.now());
-        bookingRepository.save(booking);
-        return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
-    }
 
 
     @Transactional
@@ -180,12 +156,11 @@ public class BookingService {
 
         List<BookingDetail> details = bookingDetailRepository.findByBookingId(bookingId);
 
-        // Hoàn trả số lượng phòng
         for (BookingDetail d : details) {
             increaseAvailability(d.getRoomId(), booking.getCheckInDate(), booking.getCheckOutDate(), d.getNumRoom());
         }
 
-        booking.setStatus(0); // CANCELLED
+        booking.setStatus(0); 
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
 
@@ -195,22 +170,14 @@ public class BookingService {
     public void payment(boolean isPaid, Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
         if (isPaid) {
-            booking.setStatus(2); // CONFIRMED
+            booking.setStatus(2); 
         } else {
-            booking.setStatus(0); // CANCELLED
+            booking.setStatus(0); 
         }
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
     }
 
-    @Transactional
-    public BookingResponse updateStatus(Long bookingId, Integer newStatus) {
-        Booking booking = findBookingOrThrow(bookingId);
-        booking.setStatus(newStatus);
-        booking.setUpdatedAt(LocalDateTime.now());
-        bookingRepository.save(booking);
-        return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
-    }
 
     private Booking findBookingOrThrow(Long bookingId) {
         return bookingRepository.findById(bookingId)

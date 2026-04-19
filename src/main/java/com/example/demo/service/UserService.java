@@ -77,7 +77,7 @@ public class UserService {
                 throw new hotelException("Mật khẩu không đúng!");
             }
             String role = userRepository.findUserRoleByUsername(user.get().getUsername());
-            if (!role.equals("PARTNER")) {
+            if (!role.equals("PARTNER") && !role.equals("ADMIN")) {
                 throw new hotelException("Tài khoản không phải là Partner!");
             }   
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();

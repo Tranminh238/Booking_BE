@@ -106,6 +106,15 @@ public class HotelController {
         }
     }
 
+    @PutMapping("/approve/{id}")
+    public ResponseEntity<BaseResponse> approveHotel(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(hotelService.browseHotel(id));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, "Duyệt khách sạn thất bại", e.getMessage()));
+        }
+    }
+
     @GetMapping("/getall")
     public ResponseEntity<BaseResponse> getAllHotels(
             @RequestParam(defaultValue = "0") int page,
@@ -128,10 +137,30 @@ public class HotelController {
         }
     }
 
+    @GetMapping("/gethotelwait")
+    public ResponseEntity<BaseResponse> getHotelWait() {
+        try {
+            List<HotelResponse> result = hotelService.getHotelWait();
+            return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
+        }
+    }
+
     @GetMapping("/gethotelactivebyuserid/{userId}")
     public ResponseEntity<BaseResponse> getHotelActiveByUserId(@PathVariable Long userId) {
         try {
             List<HotelResponse> result = hotelService.getHotelActiveByUserId(userId);
+            return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/gethotelactive")
+    public ResponseEntity<BaseResponse> getHotelActive() {
+        try {
+            List<HotelResponse> result = hotelService.getHotelActive();
             return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
@@ -145,6 +174,26 @@ public class HotelController {
             return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/gethoteldeleted")
+    public ResponseEntity<BaseResponse> getHotelDeleted() {
+        try {
+            List<HotelResponse> result = hotelService.getHotelDeleted();
+            return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/gethoteldetail/{id}")
+    public ResponseEntity<BaseResponse> getHotelDetail(@PathVariable Long id) {
+        try {
+            HotelResponse result = hotelService.getHotelDetail(id);
+            return ResponseEntity.ok(new BaseResponse(200, "Lấy chi tiết khách sạn thành công", result));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, "Lấy chi tiết khách sạn thất bại", e.getMessage()));
         }
     }
 

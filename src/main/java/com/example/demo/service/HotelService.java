@@ -221,13 +221,28 @@ public class HotelService {
         return result.stream().map(this::mapToResponse).toList();
     }
 
+    public List<HotelResponse> getHotelWait() {
+        List<Hotel> result = hotelRepository.findHotelWait();
+        return result.stream().map(this::mapToResponse).toList();
+    }
+
     public List<HotelResponse> getHotelActiveByUserId(Long userId) {
         List<Hotel> result = hotelRepository.findHotelActiveByUserId(userId);
         return result.stream().map(this::mapToResponse).toList();
     }
 
+    public List<HotelResponse> getHotelActive() {
+        List<Hotel> result = hotelRepository.findHotelActive();
+        return result.stream().map(this::mapToResponse).toList();
+    }
+
     public List<HotelResponse> getHotelDeletedByUserId(Long userId) {
         List<Hotel> result = hotelRepository.findHotelDeletedByUserId(userId);
+        return result.stream().map(this::mapToResponse).toList();
+    }
+
+    public List<HotelResponse> getHotelDeleted() {
+        List<Hotel> result = hotelRepository.findHotelDeleted();
         return result.stream().map(this::mapToResponse).toList();
     }
 
