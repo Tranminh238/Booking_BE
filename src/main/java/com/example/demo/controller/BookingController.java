@@ -36,6 +36,33 @@ public class BookingController {
         }
     }
 
+    @GetMapping("/hotel/{hotelId}")
+    public ResponseEntity<?> getBookingsByHotelId(@PathVariable Long hotelId) {
+        try {
+            return ResponseEntity.ok(bookingService.getAllBookingsByHotelId(hotelId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/partner/{userId}")
+    public ResponseEntity<?> getBookingByUserId(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(bookingService.getBookingByUserId(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllBookings() {
+        try {
+            return ResponseEntity.ok(bookingService.getAllBookings());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/payment/{bookingId}")
     public ResponseEntity<?> createPaymentUrl(
             @PathVariable Long bookingId,
@@ -49,7 +76,8 @@ public class BookingController {
     }
 
     @GetMapping("/payment/callback")
-    public ResponseEntity<?> paymentCallback(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<?> paymentCallback(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         try {
             int result = vnPayService.resultPayment(request);
             if (result == 1) {

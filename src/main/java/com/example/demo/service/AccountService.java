@@ -22,7 +22,7 @@ public class AccountService {
 
     @Transactional
     public void registerClient(RegistRequest registRequest) {
-        if(userRepository.findByUsername(registRequest.getEmail()).isPresent()){
+        if (userRepository.findByUsername(registRequest.getEmail()).isPresent()) {
             throw new hotelException("User đã tồn tại");
         }
         Account userEntity = Account.builder()
@@ -37,13 +37,14 @@ public class AccountService {
                 .email(registRequest.getEmail())
                 .firstName(registRequest.getFirstName())
                 .lastName(registRequest.getLastName())
+                .phoneNumber(registRequest.getPhoneNumber())
                 .build();
         usersRepository.save(client);
     }
 
     @Transactional
     public void registerPartner(RegistRequest registRequest) {
-        if(userRepository.findByUsername(registRequest.getEmail()).isPresent()){
+        if (userRepository.findByUsername(registRequest.getEmail()).isPresent()) {
             throw new hotelException("User đã tồn tại");
         }
         Account userEntity = Account.builder()
@@ -58,12 +59,13 @@ public class AccountService {
                 .email(registRequest.getEmail())
                 .firstName(registRequest.getFirstName())
                 .lastName(registRequest.getLastName())
+                .phoneNumber(registRequest.getPhoneNumber())
                 .build();
         usersRepository.save(partner);
     }
 
     @Transactional
-    public void editInfo(ClientEdditInfoRequest request){
+    public void editInfo(ClientEdditInfoRequest request) {
         User client = usersRepository.findById(request.getUserId())
                 .orElseThrow(() -> new hotelException("Client not found by id: " + request.getUserId()));
         Account user = userRepository.findById(request.getUserId())

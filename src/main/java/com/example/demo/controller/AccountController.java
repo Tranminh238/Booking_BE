@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class AccountController {
-    private final AccountService clientService;
+    private final AccountService accountService;
     @PostMapping("/register")
     public ResponseEntity<BaseResponse> register(@RequestBody @Valid RegistRequest registRequest){
         try {
-            clientService.registerClient(registRequest);
+            accountService.registerClient(registRequest);
             return ResponseEntity.ok(new BaseResponse(200, "Success", null));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
@@ -27,7 +27,7 @@ public class AccountController {
     @PostMapping("/register-partner")
     public ResponseEntity<BaseResponse> registerPartner(@RequestBody @Valid RegistRequest registRequest){
         try {
-            clientService.registerPartner(registRequest);
+            accountService.registerPartner(registRequest);
             return ResponseEntity.ok(new BaseResponse(200, "Success", null));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
@@ -36,7 +36,7 @@ public class AccountController {
     @PostMapping("/edit-info")
     public ResponseEntity<BaseResponse> editInfo(@RequestBody ClientEdditInfoRequest request) {
         try {
-            clientService.editInfo(request);
+            accountService.editInfo(request);
             return ResponseEntity.ok(new BaseResponse(200, "Success", null));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));

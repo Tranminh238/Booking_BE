@@ -145,7 +145,6 @@ public class HotelService {
             hotelAddressRepository.save(address);
         }
 
-        // Cập nhật ảnh: xóa cũ → upload & thêm mới
         if (imageFiles != null && !imageFiles.isEmpty()) {
             imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.HOTEL);
             for (MultipartFile file : imageFiles) {
@@ -163,7 +162,6 @@ public class HotelService {
             }
         }
 
-        // Cập nhật policy files: xóa cũ → upload & thêm mới
         if (policyFiles != null && !policyFiles.isEmpty()) {
             imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.POLICY);
             for (MultipartFile file : policyFiles) {
@@ -253,9 +251,18 @@ public class HotelService {
     }
 
     private HotelResponse mapToResponse(Hotel hotel) {
-        String address = hotelAddressRepository.findByHotelId(hotel.getId())
-                .map(a -> a.getDistrict() + ", " + a.getCity() + ", " + a.getCountry())
-                .orElse(null);
+        HotelAddress hotelAddr = hotelAddressRepository.findByHotelId(hotel.getId()).orElse(null);
+        String address = null;
+        String district = null;
+        String city = null;
+        String country = null;
+        
+        if (hotelAddr != null) {
+            district = hotelAddr.getDistrict();
+            city = hotelAddr.getCity();
+            country = hotelAddr.getCountry();
+            address = district + ", " + city + ", " + country;
+        }
 
         List<String> images = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.HOTEL)
                 .stream()
@@ -277,6 +284,9 @@ public class HotelService {
                 .status(hotel.getStatus())
                 .description(hotel.getDescription())
                 .address(address)
+                .district(district)
+                .city(city)
+                .country(country)
                 .images(images)
                 .policy_url(policyUrls)
                 .amenities(amenities)

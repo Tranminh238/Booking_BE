@@ -20,7 +20,6 @@ public class Booking {
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private Integer totalPrice;
-    // 0 = cancelled, 1 = pending, 2 = confirmed, 3 = checked_in, 4 = completed
     private Integer status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

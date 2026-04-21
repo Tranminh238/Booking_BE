@@ -22,7 +22,9 @@ public class HotelResponse {
     private Integer status;
     private String description;
     private String address;
+    private String district;
     private String city;
+    private String country;
     private Time checkin_time_start;
     private Time checkin_time_end;
     private Time checkout_time_start;

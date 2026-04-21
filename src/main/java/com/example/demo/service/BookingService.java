@@ -121,6 +121,18 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    public List<Object[]> getAllBookingsByHotelId(Long hotelId) {
+        return bookingRepository.getAllBookingsByHotelId(hotelId);
+    }
+
+    public List<Object[]> getBookingByUserId(Long userId) {
+        return bookingRepository.getBookingByUserId(userId);
+    }
+
+    public List<Object[]> getAllBookings() {
+        return bookingRepository.getAllBookings();
+    }
+
 
     public BookingResponse getBookingById(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
