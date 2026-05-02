@@ -17,6 +17,7 @@ public class Review {
     private Long userId;
     private Long hotelId;
     private Integer rating;
+    @Column(columnDefinition = "TEXT")
     private String comment;
     private LocalDateTime createdAt;
 }

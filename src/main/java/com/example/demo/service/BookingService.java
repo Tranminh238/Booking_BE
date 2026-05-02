@@ -80,6 +80,9 @@ public class BookingService {
                 .checkInDate(req.getCheckInDate())
                 .checkOutDate(req.getCheckOutDate())
                 .totalPrice(totalPrice)
+                .contactName(req.getContactName())
+                .contactPhone(req.getContactPhone())
+                .contactEmail(req.getContactEmail())
                 .status(1) // PENDING
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

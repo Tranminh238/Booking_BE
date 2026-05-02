@@ -21,6 +21,9 @@ public class Booking {
     private LocalDate checkOutDate;
     private Integer totalPrice;
     private Integer status;
+    private String contactName;
+    private String contactPhone;
+    private String contactEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

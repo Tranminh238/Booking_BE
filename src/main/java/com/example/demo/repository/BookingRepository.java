@@ -15,24 +15,28 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByRoomId(Long roomId);
     List<Booking> findByUserIdAndStatus(Long userId, Integer status);
 
-    @Query("SELECT u.firstName, u.lastName, u.email, u.phoneNumber, h.name, rt.name, b.checkInDate, b.checkOutDate, b.totalPrice, p.status FROM Booking b JOIN   User u ON b.userId = u.id JOIN Room r ON b.roomId = r.id JOIN Hotel h ON r.hotelId = h.id JOIN Payment p ON b.id = p.bookingId Join RoomType rt ON r.roomTypeId = rt.id")
+    @Query("SELECT u.firstName, u.lastName, u.email, u.phoneNumber, h.name, rt.name, b.checkInDate, b.checkOutDate, b.totalPrice, p.status " +
+           "FROM Booking b, User u, Room r, Hotel h, Payment p, RoomType rt " +
+           "WHERE b.userId = u.id AND b.roomId = r.id AND r.hotelId = h.id AND b.id = p.bookingId AND r.roomTypeId = rt.id")
     List<Object[]> getAllBookings();
 
-    @Query("SELECT u.firstName, u.lastName, u.email, u.phoneNumber, h.name, rt.name, b.checkInDate, b.checkOutDate, b.totalPrice, p.status FROM Booking b JOIN   User u ON b.userId = u.id JOIN Room r ON b.roomId = r.id JOIN Hotel h ON r.hotelId = h.id JOIN Payment p ON b.id = p.bookingId Join RoomType rt ON r.roomTypeId = rt.id WHERE h.id = :hotelId")
-    List<Object[]> getAllBookingsByHotelId(Long hotelId);
+    @Query("SELECT u.firstName, u.lastName, u.email, u.phoneNumber, h.name, rt.name, b.checkInDate, b.checkOutDate, b.totalPrice, p.status " +
+           "FROM Booking b, User u, Room r, Hotel h, Payment p, RoomType rt " +
+           "WHERE b.userId = u.id AND b.roomId = r.id AND r.hotelId = h.id AND b.id = p.bookingId AND r.roomTypeId = rt.id AND h.id = :hotelId")
+    List<Object[]> getAllBookingsByHotelId(@Param("hotelId") Long hotelId);
 
     @Query("""
         SELECT u.firstName, u.lastName, u.email, u.phoneNumber,
             h.name, rt.name,
             b.checkInDate, b.checkOutDate, b.totalPrice,
             p.status
-        FROM Booking b
-        JOIN User u ON b.userId = u.id
-        JOIN Room r ON b.roomId = r.id
-        JOIN Hotel h ON r.hotelId = h.id
-        JOIN Payment p ON b.id = p.bookingId
-        JOIN RoomType rt ON r.roomTypeId = rt.id
-        WHERE h.userId = :userId
+        FROM Booking b, User u, Room r, Hotel h, Payment p, RoomType rt
+        WHERE b.userId = u.id 
+          AND b.roomId = r.id 
+          AND r.hotelId = h.id 
+          AND b.id = p.bookingId 
+          AND r.roomTypeId = rt.id 
+          AND h.userId = :userId
         """)
-List<Object[]> getBookingByPartnerId(@Param("userId") Long userId);
+    List<Object[]> getBookingByPartnerId(@Param("userId") Long userId);
 }

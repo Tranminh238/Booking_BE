@@ -211,16 +211,14 @@ public class HotelController {
             return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
         }
     }
+
     @PostMapping("/searchHotels")
     public ResponseEntity<BaseResponse> filterHotels(
-            @RequestBody HotelFilter filter,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        
+            @RequestBody HotelFilter filter) {
+
         try {
-            // Apply page/size from the request body if they are provided, else fallback to RequestParam
-            int finalPage = (filter.getPage() != null) ? filter.getPage() : page;
-            int finalSize = (filter.getSize() != null) ? filter.getSize() : size;
+            int finalPage = (filter.getPage() != null) ? filter.getPage() : 0;
+            int finalSize = (filter.getSize() != null) ? filter.getSize() : 10;
 
             Page<HotelFilterResponse> result = hotelService.filterHotels(filter, finalPage, finalSize);
             return ResponseEntity.ok(new BaseResponse(200, "Success", result));

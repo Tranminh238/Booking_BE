@@ -24,4 +24,7 @@ public class BookingRequest {
     private Integer pricePerNight;
     // Trạng thái thanh toán
     private String paymentMethod; // "VNPAY", "CASH", ...
+    private String contactName;
+    private String contactPhone;
+    private String contactEmail;
 }

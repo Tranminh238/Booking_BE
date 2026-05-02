@@ -24,6 +24,8 @@ public class BookingResponse {
     private Integer status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    // Chi tiết booking
+    private String contactName;
+    private String contactPhone;
+    private String contactEmail;
     private List<BookingDetailResponse> details;
 }

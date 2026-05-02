@@ -3,20 +3,17 @@ package com.example.demo.repository;
 import com.example.demo.Util.QueryUtil;
 import com.example.demo.dto.Hotel.request.HotelFilter;
 import com.example.demo.dto.Hotel.response.HotelFilterResponse;
-import com.example.demo.entity.HotelAddress;
-import com.example.demo.entity.Image;
-import com.example.demo.enums.ImageEmun.RefType;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageImpl;
+import java.util.Map;
+import java.util.HashMap;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -25,155 +22,152 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @RequiredArgsConstructor
 public class FilterRepositoryImpl implements FilterRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final HotelAddressRepository hotelAddressRepository;
-    private final HotelAmenitiesRepository hotelAmenitiesRepository;
-    private final ImageRepository imageRepository;
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    @Override
-    public Page<HotelFilterResponse> filterHotel(Pageable pageable, HotelFilter request) {
-        StringBuilder sql = new StringBuilder("SELECT DISTINCT h.* FROM hotel h ");
-        List<String> conditions = new ArrayList<>();
-        Map<String, Object> params = new HashMap<>();
+    private String createGetHotelQuery(HotelFilter request) {
+        String select = """
+                select  h.id                                as hotelId,
+                        h.name                              as hotelName,
+                        h.star                              as hotelStar,
+                        h.status                            as hotelStatus,
+                        ha2.city                            as hotelCity,
+                        h.rating_avg                        as hotelRatingAvg,
+                        rt.name                             as roomTypeName,
+                        MIN(r.price_per_night)              as roomPricePerNight,
+                        GROUP_CONCAT(DISTINCT a.name)       as hotelAmenities
 
-        conditions.add("h.status = 2");
+                from    Hotel h
+                        join rooms r on h.id = r.hotel_id
+                        join room_types rt on r.room_type_id = rt.id
+                        join hotel_amenities ha on h.id = ha.hotel_id
+                        join amenities a on ha.amenity_id = a.id
+                        join hotel_addresses ha2 on h.id = ha2.hotel_id
+                        left join room_availabilities ra2 on r.id = ra2.room_id
+                """;
+        List<String> whereList = new ArrayList<>();
 
-        if (StringUtils.isNotBlank(request.getName())) {
-            conditions.add("h.name LIKE :name");
-            params.put("name", "%" + request.getName() + "%");
+        whereList.add("h.status = 2");
+        boolean hasName = StringUtils.isNotBlank(request.getName());
+        boolean hasCity = StringUtils.isNotBlank(request.getCity());
+        if (hasName && hasCity && request.getName().equals(request.getCity())) {
+            whereList.add("(h.name like :name OR ha2.city like :city)");
+        } else {
+            if (StringUtils.isNotBlank(request.getName())) {
+                whereList.add("h.name like :name");
+            }
+            if (StringUtils.isNotBlank(request.getCity())) {
+                whereList.add("(ha2.city like :city OR ha2.city like :cityNFD)");
+            }
         }
+
+        if (Objects.nonNull(request.getMinPrice()) && Objects.nonNull(request.getMaxPrice())) {
+            whereList.add("r.price_per_night >= :minPrice AND r.price_per_night <= :maxPrice");
+        }
+
         if (request.getStar() != null) {
-            conditions.add("h.star >= :star");
-            params.put("star", request.getStar());
+            whereList.add("h.star >= :star");
         }
         if (request.getAvgRating() != null) {
-            conditions.add("h.rating_avg >= :ratingAvg");
-            params.put("ratingAvg", request.getAvgRating());
+            whereList.add("h.rating_avg >= :ratingAvg");
         }
 
-        if (StringUtils.isNotBlank(request.getCity())) {
-            sql.append(" JOIN hotel_address ha ON h.id = ha.hotel_id ");
-            conditions.add("ha.city LIKE :city");
-            params.put("city", "%" + request.getCity() + "%");
+        if (request.getNum_room() != null) {
+            whereList.add("ra2.quantity_available >= :num_room");
         }
-
-        boolean joinRoom = request.getMinPrice() != null || request.getMaxPrice() != null 
-                           || StringUtils.isNotBlank(request.getRoomType()) 
-                           || (request.getCheckInDate() != null && request.getCheckOutDate() != null);
-        if (joinRoom) {
-            sql.append(" JOIN room r ON h.id = r.hotel_id ");
-            if (Objects.nonNull(request.getMinPrice()) && Objects.nonNull(request.getMaxPrice())) {
-                conditions.add("r.pricepernight BETWEEN :minPrice AND :maxPrice");
-                params.put("minPrice", request.getMinPrice());
-                params.put("maxPrice", request.getMaxPrice());
-            }
-            if (StringUtils.isNotBlank(request.getRoomType())) {
-                sql.append(" JOIN room_type rt ON r.room_type_id = rt.id ");
-                conditions.add("rt.name LIKE :roomType");
-                params.put("roomType", "%" + request.getRoomType() + "%");
-            }
-            if (request.getCheckInDate() != null && request.getCheckOutDate() != null) {
-                sql.append(" JOIN room_availabilities ra ON r.id = ra.room_id ");
-                conditions.add("ra.date BETWEEN :checkInDate AND :checkOutDate");
-                conditions.add("ra.quantity_available > 0");
-                params.put("checkInDate", request.getCheckInDate());
-                params.put("checkOutDate", request.getCheckOutDate());
-            }
+        if (request.getNum_guest() != null) {
+            whereList.add("r.capacity >= :num_guest");
         }
 
         if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
-            sql.append(" JOIN hotel_amenities hame ON h.id = hame.hotel_id ");
-            sql.append(" JOIN amenities a ON hame.amenity_id = a.id ");
-            conditions.add("a.name IN (:amenities)");
-            params.put("amenities", request.getAmenities());
+            whereList.add("a.id IN (:amenityIds)");
         }
 
-        if (!conditions.isEmpty()) {
-            sql.append(" WHERE ").append(String.join(" AND ", conditions));
+        if (StringUtils.isNotBlank(request.getRoomType())) {
+            whereList.add("rt.name IN (:roomTypeIds)");
+        }
+        if (request.getCheckInDate() != null && request.getCheckOutDate() != null) {
+            whereList.add("ra2.date BETWEEN :checkInDate AND :checkOutDate");
+        }
+        String where = "";
+        if (!whereList.isEmpty()) {
+            where = QueryUtil.createWhereQuery(whereList);
         }
 
-        // Handle Order By
-        String orderBy = " ORDER BY h.id ASC";
+        String groupBy = " GROUP BY h.id, h.name, h.star, h.status, ha2.city, h.rating_avg, rt.name";
+
+        String order = " ORDER BY ";
         if (StringUtils.isNotBlank(request.getSort())) {
             try {
-                String sortField = QueryUtil.checkSearchHotel(request.getSort());
-                String orderDir = StringUtils.isNotBlank(request.getOrder()) ? request.getOrder() : "ASC";
-                if (sortField.equals("price")) {
-                    if (!joinRoom) {
-                        sql.append(" JOIN room r_sort ON h.id = r_sort.hotel_id ");
-                    }
-                    orderBy = " ORDER BY " + (joinRoom ? "r.pricepernight" : "r_sort.pricepernight") + " " + orderDir;
-                } else if (sortField.equals("avgRating")) {
-                    orderBy = " ORDER BY h.rating_avg " + orderDir;
-                } else if (sortField.equals("name")) {
-                    orderBy = " ORDER BY h.name " + orderDir;
-                } else if (sortField.equals("star")) {
-                    orderBy = " ORDER BY h.star " + orderDir;
+                order += QueryUtil.checkSearchHotel(request.getSort());
+                if (StringUtils.isNotBlank(request.getOrder())) {
+                    order += " " + request.getOrder();
                 }
             } catch (Exception e) {
-                orderBy = " ORDER BY h.id ASC";
+                order += "h.id ASC";
             }
+        } else {
+            order += "h.id ASC";
         }
-        
-        String countQuery = "SELECT COUNT(DISTINCT h.id) FROM (" + sql.toString() + ") AS count_tbl";
-        Integer total = jdbcTemplate.queryForObject(countQuery, params, Integer.class);
-        if (total == null) total = 0;
 
-        sql.append(orderBy);
-        sql.append(" LIMIT :limit OFFSET :offset");
-        params.put("limit", pageable.getPageSize());
-        params.put("offset", pageable.getOffset());
+        String query = select + where + groupBy + order;
+        return query;
+    }
 
-        List<HotelFilterResponse> content = jdbcTemplate.query(
-            sql.toString(),
-            params,
-            (rs, rowNum) -> {
-                Long hotelId = rs.getLong("id");
-                
-                HotelAddress hotelAddr = hotelAddressRepository.findByHotelId(hotelId).orElse(null);
-                String address = null;
-                String district = null;
-                String city = null;
-                String country = null;
-                
-                if (hotelAddr != null) {
-                    district = hotelAddr.getDistrict();
-                    city = hotelAddr.getCity();
-                    country = hotelAddr.getCountry();
-                    address = district + ", " + city + ", " + country;
-                }
+    private Map<String, Object> createParams(HotelFilter request) {
+        Map<String, Object> params = new HashMap<>();
+        if (StringUtils.isNotBlank(request.getName())) {
+            params.put("name", "%" + request.getName() + "%");
+        }
+        if (StringUtils.isNotBlank(request.getCity())) {
+            params.put("city", "%" + request.getCity() + "%");
+        }
+        if (request.getStar() != null) {
+            params.put("star", request.getStar());
+        }
+        if (request.getAvgRating() != null) {
+            params.put("ratingAvg", request.getAvgRating());
+        }
+        if (Objects.nonNull(request.getMinPrice()) && Objects.nonNull(request.getMaxPrice())) {
+            params.put("minPrice", request.getMinPrice());
+            params.put("maxPrice", request.getMaxPrice());
+        }
+        if (request.getNum_room() != null) {
+            params.put("num_room", request.getNum_room());
+        }
+        if (request.getNum_guest() != null) {
+            params.put("num_guest", request.getNum_guest());
+        }
+        if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
+            params.put("amenityIds", request.getAmenities());
+        }
+        if (StringUtils.isNotBlank(request.getRoomType())) {
+            params.put("roomTypeIds", java.util.Arrays.asList(request.getRoomType().split(",")));
+        }
+        if (request.getCheckInDate() != null && request.getCheckOutDate() != null) {
+            params.put("checkInDate", request.getCheckInDate());
+            params.put("checkOutDate", request.getCheckOutDate());
+        }
+        return params;
+    }
 
-                List<String> images = imageRepository.findByRefIdAndRefType(hotelId, RefType.HOTEL)
-                        .stream()
-                        .map(Image::getImageUrl)
-                        .collect(Collectors.toList());
+    public Page<HotelFilterResponse> filterHotel(Pageable pageable, HotelFilter request) {
+        List<HotelFilterResponse> hotelFilterResponses = jdbcTemplate.query(
+                createGetHotelQuery(request),
+                createParams(request),
+                (rs, rowNum) -> HotelFilterResponse.builder()
+                        .id(rs.getLong("hotelId"))
+                        .name(rs.getString("hotelName"))
+                        .star(rs.getInt("hotelStar"))
+                        .status(rs.getInt("hotelStatus"))
+                        .amenities(rs.getString("hotelAmenities") != null
+                                ? java.util.Arrays.asList(rs.getString("hotelAmenities").split(","))
+                                : new ArrayList<>())
+                        .city(rs.getString("hotelCity"))
+                        .rating_avg(rs.getFloat("hotelRatingAvg"))
+                        .roomTypeName(rs.getString("roomTypeName"))
+                        .roomPricePerNight(rs.getDouble("roomPricePerNight"))
+                        .build());
 
-
-
-                List<String> amenities = hotelAmenitiesRepository.findAmenityNamesByHotelId(hotelId);
-
-                return HotelFilterResponse.builder()
-                    .id(hotelId)
-                    .name(rs.getString("name"))
-                    .star(rs.getInt("star"))
-                    .rating_avg(rs.getFloat("rating_avg"))
-                    .status(rs.getInt("status"))
-                    .description(rs.getString("description"))
-                    .address(address)
-                    .district(district)
-                    .city(city)
-                    .country(country)
-                    .images(images)
-                    .amenities(amenities)
-                    .checkin_time_start(rs.getTime("checkin_time_start"))
-                    .checkin_time_end(rs.getTime("checkin_time_end"))
-                    .checkout_time_start(rs.getTime("checkout_time_start"))
-                    .checkout_time_end(rs.getTime("checkout_time_end"))
-                    .created_at(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null)
-                    .updated_at(rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null)
-                    .build();
-            }
-        );
-
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(hotelFilterResponses, pageable, hotelFilterResponses.size());
     }
 }
