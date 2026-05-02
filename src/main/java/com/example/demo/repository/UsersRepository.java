@@ -16,6 +16,6 @@ public interface UsersRepository extends JpaRepository <User, Long> {
 
     @Query("SELECT new com.example.demo.dto.User.response.UserResponse(" +
        "u.id, CONCAT(u.firstName, ' ', u.lastName), u.email, u.phoneNumber, a.role) " +
-       "FROM User u JOIN Account a ON u.id = a.id")
+       "FROM User u, Account a WHERE u.userId = a.id")
     List<UserResponse> findAllUser();
 }

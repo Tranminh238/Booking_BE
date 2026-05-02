@@ -39,4 +39,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     @Query("SELECT h FROM Hotel h JOIN HotelAddress ha ON h.id = ha.hotelId WHERE ha.city = :city AND h.status = 2")
     Page<Hotel> findHotelByCity(@Param("city") String city, Pageable pageable);
 
+    @Query("SELECT avg(r.rating) FROM Review r WHERE r.hotelId = :hotelId")
+    double getAvgRating(@Param("hotelId") Long hotelId);
 }

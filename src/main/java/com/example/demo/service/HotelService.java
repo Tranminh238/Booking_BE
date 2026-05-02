@@ -259,6 +259,14 @@ public class HotelService {
         return filterRepository.filterHotel(pageable, request);
     }
 
+    public void updateAverageRating(Long hotelId) {
+        double avg = hotelRepository.getAvgRating(hotelId);
+        Hotel hotel = hotelRepository.findById(hotelId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
+        hotel.setRating_avg((float) avg);
+        hotelRepository.save(hotel);
+    }
+
     private HotelResponse mapToResponse(Hotel hotel) {
         HotelAddress hotelAddr = hotelAddressRepository.findByHotelId(hotel.getId()).orElse(null);
         String address = null;
