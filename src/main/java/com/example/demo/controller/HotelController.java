@@ -8,7 +8,9 @@ import java.sql.Time;
 import java.util.List;
 import com.example.demo.service.HotelService;
 import com.example.demo.dto.base.BaseResponse;
+import com.example.demo.dto.Hotel.request.HotelFilter;
 import com.example.demo.dto.Hotel.request.HotelForm;
+import com.example.demo.dto.Hotel.response.HotelFilterResponse;
 import com.example.demo.dto.Hotel.response.HotelResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -207,6 +209,23 @@ public class HotelController {
             return ResponseEntity.ok(new BaseResponse(200, "Lấy danh sách khách sạn thành công", result));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, "Lấy danh sách khách sạn thất bại", e.getMessage()));
+        }
+    }
+    @PostMapping("/searchHotels")
+    public ResponseEntity<BaseResponse> filterHotels(
+            @RequestBody HotelFilter filter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        try {
+            // Apply page/size from the request body if they are provided, else fallback to RequestParam
+            int finalPage = (filter.getPage() != null) ? filter.getPage() : page;
+            int finalSize = (filter.getSize() != null) ? filter.getSize() : size;
+
+            Page<HotelFilterResponse> result = hotelService.filterHotels(filter, finalPage, finalSize);
+            return ResponseEntity.ok(new BaseResponse(200, "Success", result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new BaseResponse(400, "Error: " + e.getMessage(), null));
         }
     }
 }

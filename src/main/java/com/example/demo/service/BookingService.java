@@ -125,8 +125,8 @@ public class BookingService {
         return bookingRepository.getAllBookingsByHotelId(hotelId);
     }
 
-    public List<Object[]> getBookingByUserId(Long userId) {
-        return bookingRepository.getBookingByUserId(userId);
+    public List<Object[]> getBookingByPartnerId(Long userId) {
+        return bookingRepository.getBookingByPartnerId(userId);
     }
 
     public List<Object[]> getAllBookings() {

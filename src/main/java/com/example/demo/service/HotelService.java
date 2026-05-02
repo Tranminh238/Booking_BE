@@ -11,7 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.Util.FileUpLoadUtil;
 import com.example.demo.dto.CloudinaryResponse;
+import com.example.demo.dto.Hotel.request.HotelFilter;
 import com.example.demo.dto.Hotel.request.HotelForm;
+import com.example.demo.dto.Hotel.response.HotelFilterResponse;
 import com.example.demo.dto.Hotel.response.HotelResponse;
 import com.example.demo.dto.base.BaseResponse;
 import com.example.demo.entity.Hotel;
@@ -19,6 +21,7 @@ import com.example.demo.entity.HotelAddress;
 import com.example.demo.entity.HotelAmenities;
 import com.example.demo.entity.Image;
 import com.example.demo.enums.ImageEmun.RefType;
+import com.example.demo.repository.FilterRepository;
 import com.example.demo.repository.HotelAddressRepository;
 import com.example.demo.repository.HotelAmenitiesRepository;
 import com.example.demo.repository.HotelRepository;
@@ -38,6 +41,7 @@ public class HotelService {
     private final ImageRepository imageRepository;
     private final HotelAmenitiesRepository hotelAmenitiesRepository;
     private final CloudinaryService cloudinaryService;
+    private final FilterRepository filterRepository;
 
     @Transactional
     public void createHotel(HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
@@ -248,6 +252,11 @@ public class HotelService {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
         return mapToResponse(hotel);
+    }
+
+    public Page<HotelFilterResponse> filterHotels(HotelFilter request, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return filterRepository.filterHotel(pageable, request);
     }
 
     private HotelResponse mapToResponse(Hotel hotel) {

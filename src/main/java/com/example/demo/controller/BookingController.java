@@ -46,9 +46,9 @@ public class BookingController {
     }
 
     @GetMapping("/partner/{userId}")
-    public ResponseEntity<?> getBookingByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getBookingByPartnerId(@PathVariable Long userId) {
         try {
-            return ResponseEntity.ok(bookingService.getBookingByUserId(userId));
+            return ResponseEntity.ok(bookingService.getBookingByPartnerId(userId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -18,6 +18,8 @@ public class HotelFilter {
     private String city;
     private Integer minPrice;
     private Integer maxPrice;
+    private Integer num_guest;
+    private Integer num_room;
     private List<String> amenities;
     private String roomType;
     private Integer avgRating;

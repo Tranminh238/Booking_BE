@@ -34,5 +34,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         JOIN RoomType rt ON r.roomTypeId = rt.id
         WHERE h.userId = :userId
         """)
-List<Object[]> getBookingByUserId(@Param("userId") Long userId);
+List<Object[]> getBookingByPartnerId(@Param("userId") Long userId);
 }
