@@ -21,6 +21,7 @@ public class HotelFilter {
     private Integer num_guest;
     private Integer num_room;
     private List<String> amenities;
+    private List<String> roomAmenities;
     private String roomType;
     private Integer avgRating;
     private String name;

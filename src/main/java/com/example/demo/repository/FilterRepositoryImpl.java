@@ -44,6 +44,12 @@ public class FilterRepositoryImpl implements FilterRepository {
                         join hotel_addresses ha2 on h.id = ha2.hotel_id
                         left join room_availabilities ra2 on r.id = ra2.room_id
                 """;
+        if (request.getRoomAmenities() != null && !request.getRoomAmenities().isEmpty()) {
+            select += """
+                        join room_amenities r_amen on r.id = r_amen.room_id
+                        join amenities a2 on r_amen.amenity_id = a2.id
+                    """;
+        }
         List<String> whereList = new ArrayList<>();
 
         whereList.add("h.status = 2");
@@ -56,7 +62,7 @@ public class FilterRepositoryImpl implements FilterRepository {
                 whereList.add("h.name like :name");
             }
             if (StringUtils.isNotBlank(request.getCity())) {
-                whereList.add("(ha2.city like :city OR ha2.city like :cityNFD)");
+                whereList.add("ha2.city like :city");
             }
         }
 
@@ -79,7 +85,10 @@ public class FilterRepositoryImpl implements FilterRepository {
         }
 
         if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
-            whereList.add("a.id IN (:amenityIds)");
+            whereList.add("a.name IN (:amenityIds)");
+        }
+        if (request.getRoomAmenities() != null && !request.getRoomAmenities().isEmpty()) {
+            whereList.add("a2.name IN (:roomAmenityIds)");
         }
 
         if (StringUtils.isNotBlank(request.getRoomType())) {
@@ -98,9 +107,20 @@ public class FilterRepositoryImpl implements FilterRepository {
         String order = " ORDER BY ";
         if (StringUtils.isNotBlank(request.getSort())) {
             try {
-                order += QueryUtil.checkSearchHotel(request.getSort());
+                String sortField = QueryUtil.checkSearchHotel(request.getSort());
+                // Map logical sort field to actual SQL column alias used in SELECT
+                String sqlAlias = switch (sortField) {
+                    case "price" -> "roomPricePerNight";
+                    case "avgRating" -> "hotelRatingAvg";
+                    case "star" -> "hotelStar";
+                    case "name" -> "hotelName";
+                    default -> "h.id";
+                };
+                order += sqlAlias;
                 if (StringUtils.isNotBlank(request.getOrder())) {
                     order += " " + request.getOrder();
+                } else {
+                    order += " ASC";
                 }
             } catch (Exception e) {
                 order += "h.id ASC";
@@ -139,6 +159,9 @@ public class FilterRepositoryImpl implements FilterRepository {
         }
         if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
             params.put("amenityIds", request.getAmenities());
+        }
+        if (request.getRoomAmenities() != null && !request.getRoomAmenities().isEmpty()) {
+            params.put("roomAmenityIds", request.getRoomAmenities());
         }
         if (StringUtils.isNotBlank(request.getRoomType())) {
             params.put("roomTypeIds", java.util.Arrays.asList(request.getRoomType().split(",")));

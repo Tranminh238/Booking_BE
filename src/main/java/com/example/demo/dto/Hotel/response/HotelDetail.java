@@ -1,20 +1,19 @@
 package com.example.demo.dto.Hotel.response;
 
-import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
 import java.sql.Time;
+import java.time.LocalDateTime;
 
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HotelResponse {
+public class HotelDetail {
     private Long id;
     private String name;
     private Integer star;
@@ -30,7 +29,6 @@ public class HotelResponse {
     private Time checkout_time_start;
     private Time checkout_time_end;
     private List<String> images;
-    private List<String> policy_url;
     private List<String> amenities;
     private String identificationDocuments;
     private String checkInInstructions;

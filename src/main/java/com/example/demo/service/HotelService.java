@@ -20,10 +20,12 @@ import com.example.demo.entity.Hotel;
 import com.example.demo.entity.HotelAddress;
 import com.example.demo.entity.HotelAmenities;
 import com.example.demo.entity.Image;
+import com.example.demo.entity.HotelPolicy;
 import com.example.demo.enums.ImageEmun.RefType;
 import com.example.demo.repository.FilterRepository;
 import com.example.demo.repository.HotelAddressRepository;
 import com.example.demo.repository.HotelAmenitiesRepository;
+import com.example.demo.repository.HotelPolicyRepository;
 import com.example.demo.repository.HotelRepository;
 import com.example.demo.repository.ImageRepository;
 
@@ -42,6 +44,7 @@ public class HotelService {
     private final HotelAmenitiesRepository hotelAmenitiesRepository;
     private final CloudinaryService cloudinaryService;
     private final FilterRepository filterRepository;
+    private final HotelPolicyRepository hotelPolicyRepository;
 
     @Transactional
     public void createHotel(HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
@@ -73,6 +76,15 @@ public class HotelService {
                     .build();
             hotelAddressRepository.save(address);
         }
+
+        HotelPolicy hotelPolicy = HotelPolicy.builder()
+                .hotelId(hotel.getId())
+                .identificationDocuments(form.getIdentificationDocuments())
+                .checkInInstructions(form.getCheckInInstructions())
+                .smokePolicy(form.getSmokePolicy())
+                .petPolicy(form.getPetPolicy())
+                .build();
+        hotelPolicyRepository.save(hotelPolicy);
 
         if (form.getAmenityIds() != null && !form.getAmenityIds().isEmpty()) {
             for (Long amenityId : form.getAmenityIds()) {
@@ -107,8 +119,13 @@ public class HotelService {
                 if (file == null || file.isEmpty()) continue;
                 String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
                 CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_policy_" + hotel.getId() + "_" + fileName);
-                hotel.setPolicy_url(uploaded.getUrl());
-                hotelRepository.save(hotel);
+                Image policyImg = Image.builder()
+                        .refId(hotel.getId())
+                        .refType(RefType.POLICY)
+                        .imageUrl(uploaded.getUrl())
+                        .createAt(LocalDateTime.now())
+                        .build();
+                imageRepository.save(policyImg);
             }
         }
     }
@@ -147,6 +164,20 @@ public class HotelService {
             if (form.getCountry() != null)
                 address.setCountry(form.getCountry());
             hotelAddressRepository.save(address);
+        }
+
+        if (form.getIdentificationDocuments() != null || form.getCheckInInstructions() != null || form.getSmokePolicy() != null || form.getPetPolicy() != null) {
+            HotelPolicy policy = hotelPolicyRepository.findByHotelId(hotel.getId())
+                    .orElse(HotelPolicy.builder().hotelId(hotel.getId()).build());
+            if (form.getIdentificationDocuments() != null)
+                policy.setIdentificationDocuments(form.getIdentificationDocuments());
+            if (form.getCheckInInstructions() != null)
+                policy.setCheckInInstructions(form.getCheckInInstructions());
+            if (form.getSmokePolicy() != null)
+                policy.setSmokePolicy(form.getSmokePolicy());
+            if (form.getPetPolicy() != null)
+                policy.setPetPolicy(form.getPetPolicy());
+            hotelPolicyRepository.save(policy);
         }
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
@@ -256,6 +287,8 @@ public class HotelService {
 
     public Page<HotelFilterResponse> filterHotels(HotelFilter request, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        System.out.println(request.getCity().length());
+        System.out.println(request.getCity());
         return filterRepository.filterHotel(pageable, request);
     }
 
@@ -269,6 +302,7 @@ public class HotelService {
 
     private HotelResponse mapToResponse(Hotel hotel) {
         HotelAddress hotelAddr = hotelAddressRepository.findByHotelId(hotel.getId()).orElse(null);
+        HotelPolicy hotelPolicy = hotelPolicyRepository.findByHotelId(hotel.getId()).orElse(null);
         String address = null;
         String district = null;
         String city = null;
@@ -311,6 +345,10 @@ public class HotelService {
                 .checkin_time_end(hotel.getCheckin_time_end())
                 .checkout_time_start(hotel.getCheckout_time_start())
                 .checkout_time_end(hotel.getCheckout_time_end())
+                .identificationDocuments(hotelPolicy.getIdentificationDocuments())
+                .checkInInstructions(hotelPolicy.getCheckInInstructions())
+                .smokePolicy(hotelPolicy.getSmokePolicy())
+                .petPolicy(hotelPolicy.getPetPolicy())
                 .created_at(hotel.getCreated_at())
                 .updated_at(hotel.getUpdated_at())
                 .build();

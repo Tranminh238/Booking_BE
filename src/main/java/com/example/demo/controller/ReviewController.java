@@ -32,4 +32,9 @@ public class ReviewController {
         reviewService.createReview(userId, request);
         return ResponseEntity.ok("Đánh giá thành công");
     }
+
+    @GetMapping("/total/{hotelId}")
+    public ResponseEntity<Integer> getTotalReview(@PathVariable Long hotelId) {
+        return ResponseEntity.ok(reviewService.getTotalReview(hotelId));
+    }
 }

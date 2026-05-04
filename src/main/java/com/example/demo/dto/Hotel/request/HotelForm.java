@@ -30,11 +30,17 @@ public class HotelForm {
     private String checkout_time_start;
     @NotNull
     private String checkout_time_end;
-    
     private String description;
     @NotNull
+    private String identificationDocuments;
+    @NotNull
+    private String checkInInstructions;
+    @NotNull
+    private String smokePolicy;
+    @NotNull
+    private String petPolicy;
+    @NotNull
     private List<String> policy_url;
-    
     private List<Long> amenityIds;
     @NotNull
     private List<String> images;

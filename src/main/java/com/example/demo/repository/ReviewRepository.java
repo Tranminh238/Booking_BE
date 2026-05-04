@@ -29,4 +29,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         AND r.hotelId = :hotelId
     """)
     List<ReviewResponse> findReviewResponsesByHotelId(@Param("hotelId") Long hotelId);
+
+    @Query("""
+        SELECT COUNT(r.id)
+        FROM Review r
+        WHERE r.hotelId = :hotelId
+    """)
+    int totalReview(@Param("hotelId") Long hotelId);
 }

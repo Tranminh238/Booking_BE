@@ -57,4 +57,8 @@ public class ReviewService {
     private void updateHotelRating(Long hotelId) {
         hotelService.updateAverageRating(hotelId);
     }
+
+    public int getTotalReview(Long hotelId) {
+        return reviewRepository.totalReview(hotelId);
+    }
 }
