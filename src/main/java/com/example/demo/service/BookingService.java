@@ -250,6 +250,9 @@ public class BookingService {
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())
                 .updatedAt(booking.getUpdatedAt())
+                .contactName(booking.getContactName())
+                .contactPhone(booking.getContactPhone())
+                .contactEmail(booking.getContactEmail())
                 .details(detailResponses)
                 .build();
     }

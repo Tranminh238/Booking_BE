@@ -34,6 +34,7 @@ public class HotelFilterResponse {
     private LocalDateTime updated_at;
     
     // Additional fields for filtering
-    private String roomTypeName;
+    private List<String> roomTypeName;
     private Double roomPricePerNight;
+    private Double originalRoomPricePerNight;
 }

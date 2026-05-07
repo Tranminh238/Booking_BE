@@ -4,9 +4,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.sql.Time;
 import java.util.List;
 import com.example.demo.service.HotelService;
+
+import jakarta.validation.constraints.NotNull;
+
 import com.example.demo.dto.base.BaseResponse;
 import com.example.demo.dto.Hotel.request.HotelFilter;
 import com.example.demo.dto.Hotel.request.HotelForm;
@@ -34,6 +38,10 @@ public class HotelController {
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String country,
+            @RequestParam(required = false) String identificationDocuments,
+            @RequestParam(required = false) String checkInInstructions,
+            @RequestParam(required = false) String smokePolicy,
+            @RequestParam(required = false) String petPolicy,
             @RequestParam(required = false) List<Long> amenityIds,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles) {
@@ -51,6 +59,10 @@ public class HotelController {
                     .city(city)
                     .country(country)
                     .amenityIds(amenityIds)
+                    .identificationDocuments(identificationDocuments)
+                    .checkInInstructions(checkInInstructions)
+                    .smokePolicy(smokePolicy)
+                    .petPolicy(petPolicy)
                     .build();
             hotelService.createHotel(form, images, policyFiles);
             return ResponseEntity.ok(new BaseResponse(200, "Thêm khách sạn thành công", null));

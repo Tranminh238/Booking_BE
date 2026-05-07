@@ -55,7 +55,7 @@ public class RoomService {
                 .capacity(form.getCapacity())
                 .quantity(form.getQuantity())
                 .area(form.getArea())
-                .status(form.getStatus())
+                .status(1)
                 .description(form.getDescription())
                 .created_at(LocalDateTime.now())
                 .build();
@@ -104,7 +104,6 @@ public class RoomService {
         if (form.getCapacity() != null) room.setCapacity(form.getCapacity());
         if (form.getQuantity() != null) room.setQuantity(form.getQuantity());
         if (form.getArea() != null) room.setArea(form.getArea());
-        if (form.getStatus() != null) room.setStatus(form.getStatus());
         if (form.getDescription() != null) room.setDescription(form.getDescription());
         room.setUpdated_at(LocalDateTime.now());
         roomRepository.save(room);

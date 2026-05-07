@@ -40,7 +40,6 @@ public class RoomController {
                     .capacity(capacity)
                     .quantity(quantity)
                     .area(area)
-                    .status(status)
                     .description(description)
                     .amenityIds(amenityIds)
                     .build();
@@ -72,7 +71,6 @@ public class RoomController {
                     .capacity(capacity)
                     .quantity(quantity)
                     .area(area)
-                    .status(status)
                     .description(description)
                     .amenityIds(amenityIds)
                     .build();

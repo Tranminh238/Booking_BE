@@ -32,8 +32,9 @@ public class FilterRepositoryImpl implements FilterRepository {
                         h.status                            as hotelStatus,
                         ha2.city                            as hotelCity,
                         h.rating_avg                        as hotelRatingAvg,
-                        rt.name                             as roomTypeName,
-                        MIN(r.price_per_night)              as roomPricePerNight,
+                        GROUP_CONCAT(DISTINCT rt.name)      as roomTypeName,
+                        MIN(r.price_per_night * (100 - COALESCE((SELECT MAX(p.discount_percentage) FROM promotions p WHERE p.room_id = r.id AND p.status = 1 AND p.start_date <= CURRENT_DATE() AND p.end_date >= CURRENT_DATE() AND p.quantity_used < p.quantity_room), 0)) / 100) as roomPricePerNight,
+                        MIN(r.price_per_night)              as originalRoomPricePerNight,
                         GROUP_CONCAT(DISTINCT a.name)       as hotelAmenities
 
                 from    Hotel h
@@ -53,21 +54,30 @@ public class FilterRepositoryImpl implements FilterRepository {
         List<String> whereList = new ArrayList<>();
 
         whereList.add("h.status = 2");
-        boolean hasName = StringUtils.isNotBlank(request.getName());
-        boolean hasCity = StringUtils.isNotBlank(request.getCity());
-        if (hasName && hasCity && request.getName().equals(request.getCity())) {
+        String reqName = request.getName() != null ? java.text.Normalizer.normalize(request.getName(), java.text.Normalizer.Form.NFC) : null;
+        String reqCity = request.getCity() != null ? java.text.Normalizer.normalize(request.getCity(), java.text.Normalizer.Form.NFC) : null;
+        boolean hasName = StringUtils.isNotBlank(reqName);
+        boolean hasCity = StringUtils.isNotBlank(reqCity);
+        if (hasName && hasCity && reqName.equals(reqCity)) {
             whereList.add("(h.name like :name OR ha2.city like :city)");
         } else {
-            if (StringUtils.isNotBlank(request.getName())) {
+            if (hasName) {
                 whereList.add("h.name like :name");
             }
-            if (StringUtils.isNotBlank(request.getCity())) {
+            if (hasCity) {
                 whereList.add("ha2.city like :city");
             }
         }
 
-        if (Objects.nonNull(request.getMinPrice()) && Objects.nonNull(request.getMaxPrice())) {
-            whereList.add("r.price_per_night >= :minPrice AND r.price_per_night <= :maxPrice");
+        if (Objects.nonNull(request.getMinPrice()) || Objects.nonNull(request.getMaxPrice())) {
+            String discountQuery = "(SELECT MAX(p.discount_percentage) FROM promotions p WHERE p.room_id = r.id AND p.status = 1 AND p.start_date <= CURRENT_DATE() AND p.end_date >= CURRENT_DATE() AND p.quantity_used < p.quantity_room)";
+            if (Objects.nonNull(request.getMinPrice()) && Objects.nonNull(request.getMaxPrice())) {
+                whereList.add("(r.price_per_night * (100 - COALESCE(" + discountQuery + ", 0)) / 100) >= :minPrice AND (r.price_per_night * (100 - COALESCE(" + discountQuery + ", 0)) / 100) <= :maxPrice");
+            } else if (Objects.nonNull(request.getMinPrice())) {
+                whereList.add("(r.price_per_night * (100 - COALESCE(" + discountQuery + ", 0)) / 100) >= :minPrice");
+            } else {
+                whereList.add("(r.price_per_night * (100 - COALESCE(" + discountQuery + ", 0)) / 100) <= :maxPrice");
+            }
         }
 
         if (request.getStar() != null) {
@@ -102,7 +112,7 @@ public class FilterRepositoryImpl implements FilterRepository {
             where = QueryUtil.createWhereQuery(whereList);
         }
 
-        String groupBy = " GROUP BY h.id, h.name, h.star, h.status, ha2.city, h.rating_avg, rt.name";
+        String groupBy = " GROUP BY h.id, h.name, h.star, h.status, ha2.city, h.rating_avg";
 
         String order = " ORDER BY ";
         if (StringUtils.isNotBlank(request.getSort())) {
@@ -136,10 +146,12 @@ public class FilterRepositoryImpl implements FilterRepository {
     private Map<String, Object> createParams(HotelFilter request) {
         Map<String, Object> params = new HashMap<>();
         if (StringUtils.isNotBlank(request.getName())) {
-            params.put("name", "%" + request.getName() + "%");
+            String reqName = java.text.Normalizer.normalize(request.getName(), java.text.Normalizer.Form.NFC);
+            params.put("name", "%" + reqName + "%");
         }
         if (StringUtils.isNotBlank(request.getCity())) {
-            params.put("city", "%" + request.getCity() + "%");
+            String reqCity = java.text.Normalizer.normalize(request.getCity(), java.text.Normalizer.Form.NFC);
+            params.put("city", "%" + reqCity + "%");
         }
         if (request.getStar() != null) {
             params.put("star", request.getStar());
@@ -147,8 +159,10 @@ public class FilterRepositoryImpl implements FilterRepository {
         if (request.getAvgRating() != null) {
             params.put("ratingAvg", request.getAvgRating());
         }
-        if (Objects.nonNull(request.getMinPrice()) && Objects.nonNull(request.getMaxPrice())) {
+        if (Objects.nonNull(request.getMinPrice())) {
             params.put("minPrice", request.getMinPrice());
+        }
+        if (Objects.nonNull(request.getMaxPrice())) {
             params.put("maxPrice", request.getMaxPrice());
         }
         if (request.getNum_room() != null) {
@@ -187,8 +201,11 @@ public class FilterRepositoryImpl implements FilterRepository {
                                 : new ArrayList<>())
                         .city(rs.getString("hotelCity"))
                         .rating_avg(rs.getFloat("hotelRatingAvg"))
-                        .roomTypeName(rs.getString("roomTypeName"))
+                        .roomTypeName(rs.getString("roomTypeName") != null
+                                ? java.util.Arrays.asList(rs.getString("roomTypeName").split(","))
+                                : new ArrayList<>())
                         .roomPricePerNight(rs.getDouble("roomPricePerNight"))
+                        .originalRoomPricePerNight(rs.getDouble("originalRoomPricePerNight"))
                         .build());
 
         return new PageImpl<>(hotelFilterResponses, pageable, hotelFilterResponses.size());

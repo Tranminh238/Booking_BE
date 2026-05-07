@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.review.Request.ReviewRequest;
 import com.example.demo.dto.review.Response.ReviewResponse;
+import com.example.demo.entity.Review;
 import com.example.demo.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 
@@ -29,8 +30,12 @@ public class ReviewController {
             @PathVariable Long hotelId,
             @RequestBody ReviewRequest request,
             @RequestParam Long userId) {
-        reviewService.createReview(userId, request);
-        return ResponseEntity.ok("Đánh giá thành công");
+        try{
+            Review review = reviewService.createReview(userId,hotelId, request);
+            return ResponseEntity.ok(review);
+        }catch(Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/total/{hotelId}")

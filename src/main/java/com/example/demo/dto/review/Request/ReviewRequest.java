@@ -9,11 +9,8 @@ import lombok.Data;
 
 @Data
 public class ReviewRequest {
-    private Long userId;
-    private Long hotelId;
-    
     @Min(value = 1, message = "Rating must be at least 1")
-    @Max(value = 5, message = "Rating must be at most 5")
+    @Max(value = 10, message = "Rating must be at most 10")
     private Integer rating;
 
     private String comment;

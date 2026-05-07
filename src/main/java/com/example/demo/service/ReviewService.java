@@ -26,28 +26,30 @@ public class ReviewService {
     private final HotelRepository hotelRepository;
     private final HotelService hotelService;
 
-    public void createReview(Long userId, ReviewRequest request) {
+    public Review createReview(Long userId, Long hotelId, ReviewRequest request) {
 
-        // ❌ check đã review chưa
-        if (reviewRepository.existsByUserIdAndHotelId(userId, request.getHotelId())) {
+        if (reviewRepository.existsByUserIdAndHotelId(userId, hotelId)) {
             throw new RuntimeException("Bạn đã đánh giá khách sạn này rồi!");
         }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Hotel hotel = hotelRepository.findById(request.getHotelId())
+        Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new RuntimeException("Hotel not found"));
 
-        Review review = new Review();
-        review.setUserId(user.getId());
-        review.setHotelId(hotel.getId());
-        review.setRating(request.getRating());
-        review.setComment(request.getComment());
+        Review review = Review.builder()
+                .userId(user.getUserId())
+                .hotelId(hotel.getId())
+                .rating(request.getRating())
+                .comment(request.getComment())
+                .createdAt(LocalDateTime.now())
+                .build();
 
         reviewRepository.save(review);
 
-        updateHotelRating(hotel.getId());
+        updateHotelRating(hotelId);
+        return review;
     }
 
     public List<ReviewResponse> getReviewsByHotel(Long hotelId) {

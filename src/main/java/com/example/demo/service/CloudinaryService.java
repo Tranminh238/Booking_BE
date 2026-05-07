@@ -7,16 +7,16 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.CloudinaryResponse;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class CloudinaryService {
 
-    @Autowired
-    private Cloudinary cloudinary;
+    private final Cloudinary cloudinary;
 
-    @Transactional
     public CloudinaryResponse uploadFile(MultipartFile file, String fileName) {
         try {
             final Map result = cloudinary.uploader().upload(file.getBytes(), Map.of("public_id", "nhndev/" + fileName));

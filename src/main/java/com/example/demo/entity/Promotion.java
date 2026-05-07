@@ -2,7 +2,7 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -14,9 +14,11 @@ public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private Integer discountValue;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-
+    private Long roomId;
+    private Integer discountPercentage;
+    private Integer quantityRoom;
+    private Integer quantityUsed;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private Integer status;
 }

@@ -19,7 +19,6 @@ public class RoomForm {
     private Integer capacity;
     private Integer quantity;
     private Integer area;
-    private Integer status;
     private String description;
     private LocalDateTime createdAt;
     private List<Long> amenityIds;

@@ -21,6 +21,7 @@ import com.example.demo.entity.HotelAddress;
 import com.example.demo.entity.HotelAmenities;
 import com.example.demo.entity.Image;
 import com.example.demo.entity.HotelPolicy;
+import com.example.demo.entity.User;
 import com.example.demo.enums.ImageEmun.RefType;
 import com.example.demo.repository.FilterRepository;
 import com.example.demo.repository.HotelAddressRepository;
@@ -28,6 +29,7 @@ import com.example.demo.repository.HotelAmenitiesRepository;
 import com.example.demo.repository.HotelPolicyRepository;
 import com.example.demo.repository.HotelRepository;
 import com.example.demo.repository.ImageRepository;
+import com.example.demo.repository.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,6 +47,8 @@ public class HotelService {
     private final CloudinaryService cloudinaryService;
     private final FilterRepository filterRepository;
     private final HotelPolicyRepository hotelPolicyRepository;
+    private final EmailService emailService;
+    private final UsersRepository userRepository;
 
     @Transactional
     public void createHotel(HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
@@ -221,6 +225,21 @@ public class HotelService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
         hotel.setStatus(2);
         hotelRepository.save(hotel);
+        HotelAddress address = hotelAddressRepository.findByHotelId(hotelId).orElse(null);
+            String addressStr = address != null ? address.getDistrict() : "N/A";
+            String city      = address != null ? address.getCity()     : "N/A";
+            String country   = address != null ? address.getCountry()  : "N/A";
+
+        userRepository.findById(hotel.getUserId()).ifPresent(user -> {
+            emailService.sendHotelApprovedEmail(
+                user.getEmail(),
+                hotel.getName(),
+                addressStr,
+                city,
+                country,
+                hotel.getStar()
+            );
+    });
         return new BaseResponse(200, "Hotel browsed successfully", mapToResponse(hotel));
     }
 
@@ -287,9 +306,17 @@ public class HotelService {
 
     public Page<HotelFilterResponse> filterHotels(HotelFilter request, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println(request.getCity().length());
-        System.out.println(request.getCity());
-        return filterRepository.filterHotel(pageable, request);
+        Page<HotelFilterResponse> responses = filterRepository.filterHotel(pageable, request);
+        
+        responses.getContent().forEach(hotel -> {
+            List<String> images = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.HOTEL)
+                    .stream()
+                    .map(Image::getImageUrl)
+                    .collect(Collectors.toList());
+            hotel.setImages(images);
+        });
+        
+        return responses;
     }
 
     public void updateAverageRating(Long hotelId) {
