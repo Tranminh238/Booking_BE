@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
@@ -19,14 +20,16 @@ public class BookingRequest {
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private Integer totalPrice;
-    @NotBlank(message = "Số phòng không được để trống")
+    @NotNull(message = "Số phòng không được để trống")
     private Integer numRoom;
-    @NotBlank(message = "Số người lớn không được để trống")
+    @NotNull(message = "Số người lớn không được để trống")
     private Integer numAdults;
-    @NotBlank(message = "Số trẻ em không được để trống")
+    @NotNull(message = "Số trẻ em không được để trống")
     private Integer numChildren;
     private Integer pricePerNight;
+    @NotBlank(message = "Phương thức thanh toán không được để trống")
     private String paymentMethod;
+    private String message;
     @NotBlank(message = "Tên liên hệ không được để trống")
     private String contactName;
     @NotBlank(message = "Số điện thoại không được để trống")

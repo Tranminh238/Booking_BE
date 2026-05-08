@@ -25,6 +25,7 @@ public class BookingResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String contactName;
+    private String message;
     private String contactPhone;
     private String contactEmail;
     private List<BookingDetailResponse> details;

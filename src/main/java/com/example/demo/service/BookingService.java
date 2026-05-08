@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.Booking.Request.BookingRequest;
 import com.example.demo.dto.Booking.Response.BookingResponse;
+import com.example.demo.dto.Booking.Response.BookingDetailDTO;
 import com.example.demo.dto.BookingDetail.Response.BookingDetailResponse;
 import com.example.demo.entity.Booking;
 import com.example.demo.entity.BookingDetail;
@@ -21,6 +22,7 @@ import com.example.demo.repository.BookingRepository;
 import com.example.demo.repository.RoomAvailabilityRepository;
 import com.example.demo.repository.RoomRepository;
 import com.example.demo.repository.PaymentRepository;
+import com.example.demo.entity.Promotion;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +35,7 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final RoomAvailabilityRepository roomAvailabilityRepository;
     private final PaymentRepository paymentRepository;
+    private final PromotionService promotionService;
 
     @Transactional
     public BookingResponse createBooking(BookingRequest req) {
@@ -67,12 +70,15 @@ public class BookingService {
 
         long nights = req.getCheckInDate().toEpochDay() - LocalDate.now().toEpochDay();
         long totalNights = req.getCheckOutDate().toEpochDay() - req.getCheckInDate().toEpochDay();
-        int pricePerNight = req.getPricePerNight() != null
-                ? req.getPricePerNight()
-                : (room.getPricePerNight() != null ? room.getPricePerNight() : 0);
-        int totalPrice = req.getTotalPrice() != null
-                ? req.getTotalPrice()
-                : (int) (pricePerNight * numRoom * totalNights);
+        
+        int basePrice = room.getPricePerNight() != null ? room.getPricePerNight() : 0;
+        Promotion bestPromo = promotionService.getBestPromotion(req.getRoomId()).orElse(null);
+        int pricePerNight = basePrice;
+        if (bestPromo != null && bestPromo.getQuantityUsed() < bestPromo.getQuantityRoom()) {
+            pricePerNight = basePrice - (basePrice * bestPromo.getDiscountPercentage() / 100);
+        }
+
+        int totalPrice = (int) (pricePerNight * numRoom * totalNights);
 
         Booking booking = Booking.builder()
                 .userId(req.getUserId())
@@ -83,6 +89,7 @@ public class BookingService {
                 .contactName(req.getContactName())
                 .contactPhone(req.getContactPhone())
                 .contactEmail(req.getContactEmail())
+                .message(req.getMessage())
                 .status(1) // PENDING
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -124,15 +131,15 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    public List<Object[]> getAllBookingsByHotelId(Long hotelId) {
+    public List<BookingDetailDTO> getAllBookingsByHotelId(Long hotelId) {
         return bookingRepository.getAllBookingsByHotelId(hotelId);
     }
 
-    public List<Object[]> getBookingByPartnerId(Long userId) {
+    public List<BookingDetailDTO> getBookingByPartnerId(Long userId) {
         return bookingRepository.getBookingByPartnerId(userId);
     }
 
-    public List<Object[]> getAllBookings() {
+    public List<BookingDetailDTO> getAllBookings() {
         return bookingRepository.getAllBookings();
     }
 
@@ -253,6 +260,7 @@ public class BookingService {
                 .contactName(booking.getContactName())
                 .contactPhone(booking.getContactPhone())
                 .contactEmail(booking.getContactEmail())
+                .message(booking.getMessage())
                 .details(detailResponses)
                 .build();
     }

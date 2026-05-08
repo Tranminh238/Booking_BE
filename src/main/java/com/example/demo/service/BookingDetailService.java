@@ -1,5 +1,5 @@
-package com.example.demo.service;
+// package com.example.demo.service;
 
-public class BookingDetailService {
+// public class BookingDetailService {
     
-}
+// }

@@ -76,16 +76,18 @@ public class BookingController {
     }
 
     @GetMapping("/payment/callback")
-    public ResponseEntity<?> paymentCallback(HttpServletRequest request, HttpServletResponse response)
+    public void paymentCallback(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        try {
-            int result = vnPayService.resultPayment(request);
-            if (result == 1) {
-                return ResponseEntity.ok("Thanh toán thành công");
-            }
-            return ResponseEntity.badRequest().body("Thanh toán thất bại");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        // Xác thực chữ ký VNPay và cập nhật trạng thái Booking + Payment trong DB
+        vnPayService.resultPayment(request);
+
+        // Sau khi cập nhật DB, redirect browser về trang frontend kèm toàn bộ query params của VNPay
+        // Frontend sẽ parse các params này để hiển thị màn hình kết quả
+        String queryString = request.getQueryString(); // vd: vnp_ResponseCode=00&vnp_Amount=...
+        String frontendUrl = "http://localhost:3000/payment";
+        if (queryString != null && !queryString.isEmpty()) {
+            frontendUrl += "?" + queryString;
         }
+        response.sendRedirect(frontendUrl);
     }
 }

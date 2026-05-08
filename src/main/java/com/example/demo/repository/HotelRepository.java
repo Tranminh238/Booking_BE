@@ -42,4 +42,9 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     @Query("SELECT avg(r.rating) FROM Review r WHERE r.hotelId = :hotelId")
     double getAvgRating(@Param("hotelId") Long hotelId);
 
+    @Query("SELECT avg(h.rating_avg) FROM Hotel h WHERE h.status = 2")
+    double getTotalAvgStar();
+
+    @Query("SELECT avg(h.rating_avg) FROM Hotel h WHERE h.status = 2 and h.userId = :userId")
+    double getTotalAvgStarByUser(@Param("userId") Long userId);
 }

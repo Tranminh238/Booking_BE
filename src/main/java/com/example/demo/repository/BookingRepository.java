@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.entity.Booking;
+import com.example.demo.dto.Booking.Response.BookingDetailDTO;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,28 +16,59 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByRoomId(Long roomId);
     List<Booking> findByUserIdAndStatus(Long userId, Integer status);
 
-    @Query("SELECT u.firstName, u.lastName, u.email, u.phoneNumber, h.name, rt.name, b.checkInDate, b.checkOutDate, b.totalPrice, p.status " +
-           "FROM Booking b, User u, Room r, Hotel h, Payment p, RoomType rt " +
-           "WHERE b.userId = u.id AND b.roomId = r.id AND r.hotelId = h.id AND b.id = p.bookingId AND r.roomTypeId = rt.id")
-    List<Object[]> getAllBookings();
+    @Query("SELECT new com.example.demo.dto.Booking.Response.BookingDetailDTO(" +
+           "b.id, u.id, r.id, h.id, p.id, rt.id, " +
+           "h.name, ha.city, rt.name, " +
+           "b.contactName, b.contactPhone, b.contactEmail, " +
+           "p.status, b.status, " +
+           "b.checkInDate, b.checkOutDate, " +
+           "bd.numRoom, bd.numAdults, bd.numChildren, b.totalPrice" +
+           ") " +
+           "FROM Booking b " +
+           "LEFT JOIN BookingDetail bd ON b.id = bd.bookingId " +
+           "LEFT JOIN User u ON b.userId = u.id " +
+           "LEFT JOIN Room r ON b.roomId = r.id " +
+           "LEFT JOIN Hotel h ON r.hotelId = h.id " +
+           "LEFT JOIN HotelAddress ha ON h.id = ha.hotelId " +
+           "LEFT JOIN Payment p ON b.id = p.bookingId " +
+           "LEFT JOIN RoomType rt ON r.roomTypeId = rt.id")
+    List<BookingDetailDTO> getAllBookings();
 
-    @Query("SELECT u.firstName, u.lastName, u.email, u.phoneNumber, h.name, rt.name, b.checkInDate, b.checkOutDate, b.totalPrice, p.status " +
-           "FROM Booking b, User u, Room r, Hotel h, Payment p, RoomType rt " +
-           "WHERE b.userId = u.id AND b.roomId = r.id AND r.hotelId = h.id AND b.id = p.bookingId AND r.roomTypeId = rt.id AND h.id = :hotelId")
-    List<Object[]> getAllBookingsByHotelId(@Param("hotelId") Long hotelId);
+    @Query("SELECT new com.example.demo.dto.Booking.Response.BookingDetailDTO(" +
+           "b.id, u.id, r.id, h.id, p.id, rt.id, " +
+           "h.name, ha.city, rt.name, " +
+           "b.contactName, b.contactPhone, b.contactEmail, " +
+           "p.status, b.status, " +
+           "b.checkInDate, b.checkOutDate, " +
+           "bd.numRoom, bd.numAdults, bd.numChildren, b.totalPrice" +
+           ") " +
+           "FROM Booking b " +
+           "LEFT JOIN BookingDetail bd ON b.id = bd.bookingId " +
+           "LEFT JOIN User u ON b.userId = u.id " +
+           "LEFT JOIN Room r ON b.roomId = r.id " +
+           "LEFT JOIN Hotel h ON r.hotelId = h.id " +
+           "LEFT JOIN HotelAddress ha ON h.id = ha.hotelId " +
+           "LEFT JOIN Payment p ON b.id = p.bookingId " +
+           "LEFT JOIN RoomType rt ON r.roomTypeId = rt.id " +
+           "WHERE h.id = :hotelId")
+    List<BookingDetailDTO> getAllBookingsByHotelId(@Param("hotelId") Long hotelId);
 
-    @Query("""
-        SELECT u.firstName, u.lastName, u.email, u.phoneNumber,
-            h.name, rt.name,
-            b.checkInDate, b.checkOutDate, b.totalPrice,
-            p.status
-        FROM Booking b, User u, Room r, Hotel h, Payment p, RoomType rt
-        WHERE b.userId = u.id 
-          AND b.roomId = r.id 
-          AND r.hotelId = h.id 
-          AND b.id = p.bookingId 
-          AND r.roomTypeId = rt.id 
-          AND h.userId = :userId
-        """)
-    List<Object[]> getBookingByPartnerId(@Param("userId") Long userId);
+    @Query("SELECT new com.example.demo.dto.Booking.Response.BookingDetailDTO(" +
+           "b.id, u.id, r.id, h.id, p.id, rt.id, " +
+           "h.name, ha.city, rt.name, " +
+           "b.contactName, b.contactPhone, b.contactEmail, " +
+           "p.status, b.status, " +
+           "b.checkInDate, b.checkOutDate, " +
+           "bd.numRoom, bd.numAdults, bd.numChildren, b.totalPrice" +
+           ") " +
+           "FROM Booking b " +
+           "LEFT JOIN BookingDetail bd ON b.id = bd.bookingId " +
+           "LEFT JOIN User u ON b.userId = u.id " +
+           "LEFT JOIN Room r ON b.roomId = r.id " +
+           "LEFT JOIN Hotel h ON r.hotelId = h.id " +
+           "LEFT JOIN HotelAddress ha ON h.id = ha.hotelId " +
+           "LEFT JOIN Payment p ON b.id = p.bookingId " +
+           "LEFT JOIN RoomType rt ON r.roomTypeId = rt.id " +
+           "WHERE h.userId = :userId")
+    List<BookingDetailDTO> getBookingByPartnerId(@Param("userId") Long userId);
 }

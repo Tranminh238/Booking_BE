@@ -238,4 +238,5 @@ public class HotelController {
             return ResponseEntity.badRequest().body(new BaseResponse(400, "Error: " + e.getMessage(), null));
         }
     }
+
 }

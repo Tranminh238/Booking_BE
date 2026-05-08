@@ -135,7 +135,7 @@ public class VnPayService {
                         paymentRepository.save(payment);
                         return 1;
                     } else {
-                        payment.setStatus(2); 
+                        payment.setStatus(1); 
                         paymentRepository.save(payment);
                         return 0;
                     }

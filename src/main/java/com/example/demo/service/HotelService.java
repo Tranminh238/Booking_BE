@@ -327,6 +327,7 @@ public class HotelService {
         hotelRepository.save(hotel);
     }
 
+
     private HotelResponse mapToResponse(Hotel hotel) {
         HotelAddress hotelAddr = hotelAddressRepository.findByHotelId(hotel.getId()).orElse(null);
         HotelPolicy hotelPolicy = hotelPolicyRepository.findByHotelId(hotel.getId()).orElse(null);

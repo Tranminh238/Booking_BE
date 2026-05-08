@@ -21,6 +21,8 @@ public class Booking {
     private LocalDate checkOutDate;
     private Integer totalPrice;
     private Integer status;
+    @Column(columnDefinition = "TEXT")
+    private String message;
     private String contactName;
     private String contactPhone;
     private String contactEmail;
