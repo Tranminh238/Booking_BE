@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,4 +21,7 @@ public class User {
     private String lastName;
     private String phoneNumber;
     private String address;
+    private LocalDate dateOfBirth;
+    private String gender;
+    private String nationality;
 }

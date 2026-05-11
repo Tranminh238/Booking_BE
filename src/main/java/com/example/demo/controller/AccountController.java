@@ -42,4 +42,13 @@ public class AccountController {
             return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
         }
     }
+
+    @GetMapping("/info/{userId}")
+    public ResponseEntity<BaseResponse> getClientInfo(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(new BaseResponse(200, "Success", accountService.getClientInfo(userId)));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
+        }
+    }
 }

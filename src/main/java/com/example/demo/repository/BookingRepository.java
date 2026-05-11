@@ -12,13 +12,30 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByUserId(Long userId);
+    @Query("SELECT new com.example.demo.dto.Booking.Response.BookingDetailDTO(" +
+           "b.id, u.id, r.id, h.id, p.id, rt.id, " +
+           "h.name, ha.city, ha.district, rt.name, " +
+           "b.contactName, b.contactPhone, b.contactEmail, " +
+           "p.status, b.status, " +
+           "b.checkInDate, b.checkOutDate, " +
+           "bd.numRoom, bd.numAdults, bd.numChildren, b.totalPrice" +
+           ") " +
+           "FROM Booking b " +
+           "LEFT JOIN BookingDetail bd ON b.id = bd.bookingId " +
+           "LEFT JOIN User u ON b.userId = u.id " +
+           "LEFT JOIN Room r ON b.roomId = r.id " +
+           "LEFT JOIN Hotel h ON r.hotelId = h.id " +
+           "LEFT JOIN HotelAddress ha ON h.id = ha.hotelId " +
+           "LEFT JOIN Payment p ON b.id = p.bookingId " +
+           "LEFT JOIN RoomType rt ON r.roomTypeId = rt.id " +
+           "WHERE b.userId = :userId")
+    List<BookingDetailDTO> findByUserId(@Param("userId") Long userId);
     List<Booking> findByRoomId(Long roomId);
     List<Booking> findByUserIdAndStatus(Long userId, Integer status);
 
     @Query("SELECT new com.example.demo.dto.Booking.Response.BookingDetailDTO(" +
            "b.id, u.id, r.id, h.id, p.id, rt.id, " +
-           "h.name, ha.city, rt.name, " +
+           "h.name, ha.city, ha.district, rt.name, " +
            "b.contactName, b.contactPhone, b.contactEmail, " +
            "p.status, b.status, " +
            "b.checkInDate, b.checkOutDate, " +
@@ -36,7 +53,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT new com.example.demo.dto.Booking.Response.BookingDetailDTO(" +
            "b.id, u.id, r.id, h.id, p.id, rt.id, " +
-           "h.name, ha.city, rt.name, " +
+           "h.name, ha.city, ha.district, rt.name, " +
            "b.contactName, b.contactPhone, b.contactEmail, " +
            "p.status, b.status, " +
            "b.checkInDate, b.checkOutDate, " +
@@ -55,7 +72,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT new com.example.demo.dto.Booking.Response.BookingDetailDTO(" +
            "b.id, u.id, r.id, h.id, p.id, rt.id, " +
-           "h.name, ha.city, rt.name, " +
+           "h.name, ha.city, ha.district, rt.name, " +
            "b.contactName, b.contactPhone, b.contactEmail, " +
            "p.status, b.status, " +
            "b.checkInDate, b.checkOutDate, " +

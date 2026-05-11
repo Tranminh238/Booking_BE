@@ -16,6 +16,7 @@ public class Review {
     private Long id;
     private Long userId;
     private Long hotelId;
+    private Long bookingId;
     private Integer rating;
     @Column(columnDefinition = "TEXT")
     private String comment;

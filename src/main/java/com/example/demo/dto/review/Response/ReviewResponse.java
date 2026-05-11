@@ -12,7 +12,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReviewResponse {
-    private String userName;
+    private Long id;
+    private Long bookingId;
+    private Long hotelId;
+    private String name; //hotelName
+    private String city;
+    private String imageUrl;
+    private String firstName;
+    private String lastName;
     private int rating;
     private String comment;
     private LocalDateTime createdAt;

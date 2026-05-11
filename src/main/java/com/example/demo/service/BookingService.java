@@ -22,7 +22,10 @@ import com.example.demo.repository.BookingRepository;
 import com.example.demo.repository.RoomAvailabilityRepository;
 import com.example.demo.repository.RoomRepository;
 import com.example.demo.repository.PaymentRepository;
+import com.example.demo.entity.Image;
 import com.example.demo.entity.Promotion;
+import com.example.demo.enums.ImageEmun.RefType;
+import com.example.demo.repository.ImageRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,8 +39,10 @@ public class BookingService {
     private final RoomAvailabilityRepository roomAvailabilityRepository;
     private final PaymentRepository paymentRepository;
     private final PromotionService promotionService;
+    private final ImageRepository imageRepository;
 
     @Transactional
+    //status: 1=WAITING, 2=CONFIRMED, 3=COMPLETE, 0=CANCELLED
     public BookingResponse createBooking(BookingRequest req) {
         if (req.getCheckInDate() == null || req.getCheckOutDate() == null) {
             throw new IllegalArgumentException("Ngày check-in và check-out không được để trống");
@@ -124,11 +129,20 @@ public class BookingService {
     }
 
 
-    public List<BookingResponse> getBookingsByUser(Long userId) {
-        List<Booking> bookings = bookingRepository.findByUserId(userId);
-        return bookings.stream()
-                .map(b -> mapToResponse(b, bookingDetailRepository.findByBookingId(b.getId())))
-                .collect(Collectors.toList());
+    public List<BookingDetailDTO> getBookingsByUser(Long userId) {
+        List<BookingDetailDTO> bookings = bookingRepository.findByUserId(userId);
+        // Fetch ảnh khách sạn riêng để tránh duplicate rows khi JOIN
+        bookings.forEach(b -> {
+            if (b.getHotelId() != null) {
+                List<String> urls = imageRepository
+                        .findByRefIdAndRefType(b.getHotelId(), RefType.HOTEL)
+                        .stream()
+                        .map(Image::getImageUrl)
+                        .collect(Collectors.toList());
+                b.setImageUrl(urls);
+            }
+        });
+        return bookings;
     }
 
     public List<BookingDetailDTO> getAllBookingsByHotelId(Long hotelId) {
@@ -153,12 +167,12 @@ public class BookingService {
 
     
     @Transactional
-    public BookingResponse confirmBooking(Long bookingId) {
+    public BookingResponse completeBooking(Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
-        if (booking.getStatus() != 1) {
-            throw new IllegalStateException("Chỉ có thể xác nhận booking ở trạng thái PENDING");
+        if (booking.getStatus() != 2) {
+            throw new IllegalStateException("Chỉ có thể hoàn thành booking ở trạng thái CONFIRMED");
         }
-        booking.setStatus(2); 
+        booking.setStatus(3); 
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
         return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
@@ -169,7 +183,7 @@ public class BookingService {
     @Transactional
     public BookingResponse cancelBooking(Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
-        if (booking.getStatus() == 3 || booking.getStatus() == 4) {
+        if (booking.getStatus() == 3 ) {
             throw new IllegalStateException("Không thể hủy booking đang check-in hoặc đã hoàn thành");
         }
         if (booking.getStatus() == 0) {

@@ -25,15 +25,36 @@ public class ReviewController {
         return ResponseEntity.ok(reviews);
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ReviewResponse>> getReviewsByUser(
+            @PathVariable Long userId) {
+        List<ReviewResponse> reviews = reviewService.getReviewsByUser(userId);
+        return ResponseEntity.ok(reviews);
+    }
+
     @PostMapping("/create/{hotelId}")
     public ResponseEntity<?> createReview(
             @PathVariable Long hotelId,
             @RequestBody ReviewRequest request,
-            @RequestParam Long userId) {
-        try{
-            Review review = reviewService.createReview(userId,hotelId, request);
+            @RequestParam Long userId,
+            @RequestParam Long bookingId) {
+        try {
+            Review review = reviewService.createReview(bookingId, userId, hotelId, request);
             return ResponseEntity.ok(review);
-        }catch(Exception e){
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/update/{bookingId}")
+    public ResponseEntity<?> updateReview(
+            @PathVariable Long bookingId,
+            @RequestParam Long hotelId,
+            @RequestBody ReviewRequest request) {
+        try {
+            reviewService.updateReview(bookingId, hotelId, request);
+            return ResponseEntity.ok("Cập nhật đánh giá thành công!");
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -43,3 +64,4 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getTotalReview(hotelId));
     }
 }
+

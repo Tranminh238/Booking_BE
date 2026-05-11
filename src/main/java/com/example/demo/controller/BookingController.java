@@ -27,6 +27,24 @@ public class BookingController {
         }
     }
 
+    @PutMapping("/complete/{bookingId}")
+    public ResponseEntity<?> completeBooking(@PathVariable Long bookingId) {
+        try {
+            return ResponseEntity.ok(bookingService.completeBooking(bookingId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/cancel/{bookingId}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long bookingId) {
+        try {
+            return ResponseEntity.ok(bookingService.cancelBooking(bookingId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getBookingsByUser(@PathVariable Long userId) {
         try {

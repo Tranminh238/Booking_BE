@@ -17,23 +17,23 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountService {
     private final UsersRepository usersRepository;
-    private final AccountRepository userRepository;
+    private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void registerClient(RegistRequest registRequest) {
-        if (userRepository.findByUsername(registRequest.getEmail()).isPresent()) {
+        if (accountRepository.findByUsername(registRequest.getEmail()).isPresent()) {
             throw new hotelException("User đã tồn tại");
         }
-        Account userEntity = Account.builder()
+        Account account = Account.builder()
                 .username(registRequest.getEmail())
                 .password(passwordEncoder.encode(registRequest.getPassword()))
                 .role("CLIENT")
                 .build();
-        Account user = userRepository.save(userEntity);
+        account = accountRepository.save(account);
 
         User client = User.builder()
-                .userId(user.getId())
+                .userId(account.getId())
                 .email(registRequest.getEmail())
                 .firstName(registRequest.getFirstName())
                 .lastName(registRequest.getLastName())
@@ -44,18 +44,18 @@ public class AccountService {
 
     @Transactional
     public void registerPartner(RegistRequest registRequest) {
-        if (userRepository.findByUsername(registRequest.getEmail()).isPresent()) {
+        if (accountRepository.findByUsername(registRequest.getEmail()).isPresent()) {
             throw new hotelException("User đã tồn tại");
         }
-        Account userEntity = Account.builder()
+        Account account = Account.builder()
                 .username(registRequest.getEmail())
                 .password(passwordEncoder.encode(registRequest.getPassword()))
                 .role("PARTNER")
                 .build();
-        Account user = userRepository.save(userEntity);
+        accountRepository.save(account);
 
         User partner = User.builder()
-                .userId(user.getId())
+                .userId(account.getId())
                 .email(registRequest.getEmail())
                 .firstName(registRequest.getFirstName())
                 .lastName(registRequest.getLastName())
@@ -68,18 +68,29 @@ public class AccountService {
     public void editInfo(ClientEdditInfoRequest request) {
         User client = usersRepository.findById(request.getUserId())
                 .orElseThrow(() -> new hotelException("Client not found by id: " + request.getUserId()));
-        Account user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new hotelException("User not found by id: " + request.getUserId()));
 
-        user.setUsername(request.getEmail());
         client.setFirstName(request.getFirstName());
         client.setLastName(request.getLastName());
         client.setPhoneNumber(request.getPhoneNumber());
-        client.setEmail(request.getEmail());
-        client.setPhoneNumber(request.getPhoneNumber());
-
-        userRepository.save(user);
+        client.setDateOfBirth(request.getDateOfBirth());
+        client.setGender(request.getGender());
+        client.setNationality(request.getNationality());
         usersRepository.save(client);
     }
 
+    public ClientInfoResponse getClientInfo(Long userId) {
+        User client = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new hotelException("Client not found by userId: " + userId));
+        return ClientInfoResponse.builder()
+                .userId(client.getUserId())
+                .email(client.getEmail())
+                .firstName(client.getFirstName())
+                .lastName(client.getLastName())
+                .phoneNumber(client.getPhoneNumber())
+                .address(client.getAddress())
+                .dateOfBirth(client.getDateOfBirth())
+                .gender(client.getGender())
+                .nationality(client.getNationality())
+                .build();
+    }
 }

@@ -6,30 +6,63 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor  // ← bắt buộc phải có để JPQL gọi constructor
 public class BookingDetailDTO {
-    private Long id;           // b.id
-    private Long userId;       // u.id
-    private Long roomId;       // r.id
-    private Long hotelId;      // h.id
-    private Long paymentId;    // p.id
-    private Long roomTypeId;   // rt.id
-    private String hotelName;  // h.name
-    private String city;       // ha.city
-    private String roomTypeName; // rt.name
-    private String contactName;  // b.contactName
-    private String contactPhone; // b.contactPhone
-    private String contactEmail; // b.contactEmail
-    private Integer paymentStatus;  // p.status
-    private Integer bookingStatus;  // b.status
-    private LocalDate checkInDate;  // b.checkInDate
-    private LocalDate checkOutDate; // b.checkOutDate
-    private Integer numRoom;     // bd.numRoom
-    private Integer numAdults;   // bd.numAdults
-    private Integer numChildren; // bd.numChildren
-    private Integer totalPrice; // b.totalPrice
+    private Long id;
+    private Long userId;
+    private Long roomId;
+    private Long hotelId;
+    private Long paymentId;
+    private Long roomTypeId;
+    private String hotelName;
+    private String city;
+    private String district;
+    private String roomTypeName;
+    private String contactName;
+    private String contactPhone;
+    private String contactEmail;
+    private Integer paymentStatus;
+    private Integer bookingStatus;
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
+    private Integer numRoom;
+    private Integer numAdults;
+    private Integer numChildren;
+    private Integer totalPrice;
+    private List<String> imageUrl;
+
+    // Constructor cho JPQL (không có imageUrl)
+    public BookingDetailDTO(Long id, Long userId, Long roomId, Long hotelId, Long paymentId,
+                             Long roomTypeId, String hotelName, String city, String district, String roomTypeName,
+                             String contactName, String contactPhone, String contactEmail,
+                             Integer paymentStatus, Integer bookingStatus,
+                             LocalDate checkInDate, LocalDate checkOutDate,
+                             Integer numRoom, Integer numAdults, Integer numChildren,
+                             Integer totalPrice) {
+        this.id = id;
+        this.userId = userId;
+        this.roomId = roomId;
+        this.hotelId = hotelId;
+        this.paymentId = paymentId;
+        this.roomTypeId = roomTypeId;
+        this.hotelName = hotelName;
+        this.city = city;
+        this.district = district;
+        this.roomTypeName = roomTypeName;
+        this.contactName = contactName;
+        this.contactPhone = contactPhone;
+        this.contactEmail = contactEmail;
+        this.paymentStatus = paymentStatus;
+        this.bookingStatus = bookingStatus;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.numRoom = numRoom;
+        this.numAdults = numAdults;
+        this.numChildren = numChildren;
+        this.totalPrice = totalPrice;
+    }
 }

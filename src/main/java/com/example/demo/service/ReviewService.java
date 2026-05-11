@@ -26,9 +26,9 @@ public class ReviewService {
     private final HotelRepository hotelRepository;
     private final HotelService hotelService;
 
-    public Review createReview(Long userId, Long hotelId, ReviewRequest request) {
+    public Review createReview(Long bookingId, Long userId, Long hotelId, ReviewRequest request) {
 
-        if (reviewRepository.existsByUserIdAndHotelId(userId, hotelId)) {
+        if (reviewRepository.existsByBookingId(bookingId)) {
             throw new RuntimeException("Bạn đã đánh giá khách sạn này rồi!");
         }
 
@@ -41,6 +41,7 @@ public class ReviewService {
         Review review = Review.builder()
                 .userId(user.getUserId())
                 .hotelId(hotel.getId())
+                .bookingId(bookingId)
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .createdAt(LocalDateTime.now())
@@ -52,8 +53,23 @@ public class ReviewService {
         return review;
     }
 
+    public void updateReview(Long bookingId, Long hotelId, ReviewRequest request) {
+        Review review = reviewRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found"));
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+        reviewRepository.save(review);
+        updateHotelRating(hotelId);
+    }
+
     public List<ReviewResponse> getReviewsByHotel(Long hotelId) {
         return reviewRepository.findReviewResponsesByHotelId(hotelId);
+    }
+
+    public List<ReviewResponse> getReviewsByUser(Long userId) {
+        return reviewRepository.findReviewResponsesByUserId(userId);
     }
 
     private void updateHotelRating(Long hotelId) {
