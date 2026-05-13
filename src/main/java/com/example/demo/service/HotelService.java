@@ -29,6 +29,8 @@ import com.example.demo.repository.HotelAmenitiesRepository;
 import com.example.demo.repository.HotelPolicyRepository;
 import com.example.demo.repository.HotelRepository;
 import com.example.demo.repository.ImageRepository;
+import com.example.demo.repository.ReviewRepository;
+import com.example.demo.repository.RoomRepository;
 import com.example.demo.repository.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +51,8 @@ public class HotelService {
     private final HotelPolicyRepository hotelPolicyRepository;
     private final EmailService emailService;
     private final UsersRepository userRepository;
+    private final ReviewRepository reviewRepository;
+    private final RoomRepository roomRepository;
 
     @Transactional
     public void createHotel(HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
@@ -307,7 +311,8 @@ public class HotelService {
     public Page<HotelFilterResponse> filterHotels(HotelFilter request, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<HotelFilterResponse> responses = filterRepository.filterHotel(pageable, request);
-        
+        System.out.println(request.getCity().length());
+        System.out.println(request.getCity());
         responses.getContent().forEach(hotel -> {
             List<String> images = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.HOTEL)
                     .stream()
@@ -355,6 +360,9 @@ public class HotelService {
 
         List<String> amenities = hotelAmenitiesRepository.findAmenityNamesByHotelId(hotel.getId());
 
+        int reviewCount = reviewRepository.totalReview(hotel.getId());
+        Integer minPrice = roomRepository.findMinPriceByHotelId(hotel.getId());
+
         return HotelResponse.builder()
                 .id(hotel.getId())
                 .name(hotel.getName())
@@ -373,10 +381,12 @@ public class HotelService {
                 .checkin_time_end(hotel.getCheckin_time_end())
                 .checkout_time_start(hotel.getCheckout_time_start())
                 .checkout_time_end(hotel.getCheckout_time_end())
-                .identificationDocuments(hotelPolicy.getIdentificationDocuments())
-                .checkInInstructions(hotelPolicy.getCheckInInstructions())
-                .smokePolicy(hotelPolicy.getSmokePolicy())
-                .petPolicy(hotelPolicy.getPetPolicy())
+                .identificationDocuments(hotelPolicy != null ? hotelPolicy.getIdentificationDocuments() : null)
+                .checkInInstructions(hotelPolicy != null ? hotelPolicy.getCheckInInstructions() : null)
+                .smokePolicy(hotelPolicy != null ? hotelPolicy.getSmokePolicy() : null)
+                .petPolicy(hotelPolicy != null ? hotelPolicy.getPetPolicy() : null)
+                .review_count(reviewCount)
+                .min_price(minPrice)
                 .created_at(hotel.getCreated_at())
                 .updated_at(hotel.getUpdated_at())
                 .build();

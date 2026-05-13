@@ -23,9 +23,15 @@ import com.example.demo.repository.RoomAvailabilityRepository;
 import com.example.demo.repository.RoomRepository;
 import com.example.demo.repository.PaymentRepository;
 import com.example.demo.entity.Image;
+import com.example.demo.entity.Hotel;
+import com.example.demo.entity.HotelAddress;
 import com.example.demo.entity.Promotion;
+import com.example.demo.entity.User;
 import com.example.demo.enums.ImageEmun.RefType;
 import com.example.demo.repository.ImageRepository;
+import com.example.demo.repository.HotelRepository;
+import com.example.demo.repository.HotelAddressRepository;
+import com.example.demo.repository.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +46,10 @@ public class BookingService {
     private final PaymentRepository paymentRepository;
     private final PromotionService promotionService;
     private final ImageRepository imageRepository;
+    private final EmailService emailService;
+    private final UsersRepository usersRepository;
+    private final HotelRepository hotelRepository;
+    private final HotelAddressRepository hotelAddressRepository;
 
     @Transactional
     //status: 1=WAITING, 2=CONFIRMED, 3=COMPLETE, 0=CANCELLED
@@ -206,12 +216,63 @@ public class BookingService {
     public void payment(boolean isPaid, Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
         if (isPaid) {
-            booking.setStatus(2); 
+            booking.setStatus(2);
+            booking.setUpdatedAt(LocalDateTime.now());
+            bookingRepository.save(booking);
+            Payment payment = paymentRepository.findByBookingId(bookingId).orElseThrow();
+            payment.setStatus(2);
+            payment.setUpdatedAt(LocalDateTime.now());
+            paymentRepository.save(payment);
+
+            try {
+                Room room = roomRepository.findById(booking.getRoomId()).orElse(null);
+                Hotel hotel = (room != null)
+                    ? hotelRepository.findById(room.getHotelId()).orElse(null)
+                    : null;
+                HotelAddress hotelAddr = (hotel != null)
+                    ? hotelAddressRepository.findByHotelId(hotel.getId()).orElse(null)
+                    : null;
+
+                String hotelName = hotel != null ? hotel.getName() : "Khách sạn";
+                String hotelCity = hotelAddr != null ? hotelAddr.getCity() : "";
+
+                String toEmail = booking.getContactEmail();
+                String customerName = booking.getContactName();
+
+                if ((toEmail == null || toEmail.isBlank()) && booking.getUserId() != null) {
+                    User user = usersRepository.findByUserId(booking.getUserId()).orElse(null);
+                    if (user != null) {
+                        toEmail = user.getEmail();
+                        customerName = user.getFirstName() + " " + user.getLastName();
+                    }
+                }
+
+                if (toEmail != null && !toEmail.isBlank()) {
+                    emailService.sendBookingConfirmationEmail(
+                        toEmail,
+                        customerName != null ? customerName : "Quý khách",
+                        booking.getId(),
+                        hotelName,
+                        hotelCity,
+                        booking.getCheckInDate().toString(),
+                        booking.getCheckOutDate().toString(),
+                        booking.getTotalPrice() != null ? booking.getTotalPrice() : 0
+                    );
+                }
+            } catch (Exception e) {
+                System.err.println("[BookingService] Lỗi gửi email xác nhận: " + e.getMessage());
+            }
         } else {
-            booking.setStatus(0); 
+            booking.setStatus(1);
+            booking.setUpdatedAt(LocalDateTime.now());
+            bookingRepository.save(booking);
+            // Cập nhật payment thành thất bại
+            paymentRepository.findByBookingId(bookingId).ifPresent(p -> {
+                p.setStatus(0);
+                p.setUpdatedAt(LocalDateTime.now());
+                paymentRepository.save(p);
+            });
         }
-        booking.setUpdatedAt(LocalDateTime.now());
-        bookingRepository.save(booking);
     }
 
 

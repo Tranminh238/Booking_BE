@@ -36,6 +36,8 @@ public class HotelResponse {
     private String checkInInstructions;
     private String smokePolicy;
     private String petPolicy;
+    private Integer review_count;
+    private Integer min_price;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
 }

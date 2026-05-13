@@ -21,6 +21,7 @@ public class VnPayService {
 
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
+    private final BookingService bookingService;
 
     public String createPaymentUrl(Long bookingId, HttpServletRequest request) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -117,28 +118,19 @@ public class VnPayService {
         if (signValue.equals(vnp_SecureHash)) {
             String vnp_ResponseCode = request.getParameter("vnp_ResponseCode");
             String vnp_OrderInfo = request.getParameter("vnp_OrderInfo");
-            
+
             String bookingIdStr = vnp_OrderInfo == null ? "" : vnp_OrderInfo.replaceAll("\\D+", "");
             if (!bookingIdStr.isEmpty()) {
                 Long bookingId = Long.parseLong(bookingIdStr);
-                Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-                Optional<Payment> paymentOpt = paymentRepository.findByBookingId(bookingId);
-                
-                if (bookingOpt.isPresent() && paymentOpt.isPresent()) {
-                    Booking booking = bookingOpt.get();
-                    Payment payment = paymentOpt.get();
-                    
-                    if ("00".equals(vnp_ResponseCode)) {
-                        booking.setStatus(2); 
-                        payment.setStatus(2); 
-                        bookingRepository.save(booking);
-                        paymentRepository.save(payment);
-                        return 1;
-                    } else {
-                        payment.setStatus(1); 
-                        paymentRepository.save(payment);
-                        return 0;
-                    }
+
+                if ("00".equals(vnp_ResponseCode)) {
+                    // Gọi bookingService.payment() để cập nhật booking + payment + gửi email
+                    bookingService.payment(true, bookingId);
+                    return 1;
+                } else {
+                    // Thanh toán thất bại: cập nhật payment và booking thành cancelled
+                    bookingService.payment(false, bookingId);
+                    return 0;
                 }
             }
             return "00".equals(vnp_ResponseCode) ? 1 : 0;

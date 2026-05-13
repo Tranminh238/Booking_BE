@@ -15,10 +15,15 @@ import jakarta.validation.constraints.NotNull;
 @NoArgsConstructor
 @Builder
 public class BookingRequest {
+    @NotNull(message = "Không được để trống")
     private Long userId;
+    @NotNull(message = "Không được để trống")
     private Long roomId;
+    @NotNull(message = "Không được để trống")
     private LocalDate checkInDate;
+    @NotNull(message = "Không được để trống")
     private LocalDate checkOutDate;
+    @NotNull(message = "Không được để trống")
     private Integer totalPrice;
     @NotNull(message = "Số phòng không được để trống")
     private Integer numRoom;
@@ -26,6 +31,7 @@ public class BookingRequest {
     private Integer numAdults;
     @NotNull(message = "Số trẻ em không được để trống")
     private Integer numChildren;
+    @NotNull(message = "Giá phòng không được để trống")
     private Integer pricePerNight;
     @NotBlank(message = "Phương thức thanh toán không được để trống")
     private String paymentMethod;

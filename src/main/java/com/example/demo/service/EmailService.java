@@ -31,6 +31,91 @@ public class EmailService {
         }
     }
 
+    public void sendBookingConfirmationEmail(
+            String toEmail,
+            String customerName,
+            Long bookingId,
+            String hotelName,
+            String hotelCity,
+            String checkIn,
+            String checkOut,
+            int totalPrice) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("✅ Xác nhận đặt phòng thành công - Mã #" + bookingId);
+            helper.setText(
+                buildBookingConfirmationEmailContent(
+                    customerName, bookingId, hotelName, hotelCity, checkIn, checkOut, totalPrice),
+                true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Không thể gửi email xác nhận đặt phòng: " + e.getMessage());
+        }
+    }
+
+    private String buildBookingConfirmationEmailContent(
+            String customerName,
+            Long bookingId,
+            String hotelName,
+            String hotelCity,
+            String checkIn,
+            String checkOut,
+            int totalPrice) {
+        String formattedPrice = String.format("%,d VND", totalPrice).replace(",", ".");
+        return """
+            <div style="font-family: Arial, sans-serif; max-width: 620px; margin: auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
+              <div style="background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 28px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 22px;">🏨 Đặt Phòng Thành Công!</h1>
+                <p style="color: #cce0ff; margin: 8px 0 0;">Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi.</p>
+              </div>
+              <div style="padding: 28px;">
+                <p style="font-size: 15px;">Xin chào <strong>%s</strong>,</p>
+                <p>Thanh toán của bạn đã được xác nhận. Dưới đây là thông tin chi tiết đặt phòng:</p>
+                <table style="width: 100%%; border-collapse: collapse; margin-top: 16px; font-size: 14px;">
+                  <tr style="background-color: #f0f4ff;">
+                    <td style="padding: 12px; border: 1px solid #dde; font-weight: bold; width: 40%%;">Mã đặt phòng</td>
+                    <td style="padding: 12px; border: 1px solid #dde; color: #1a73e8; font-weight: bold;">#%s</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px; border: 1px solid #dde; font-weight: bold;">Khách sạn</td>
+                    <td style="padding: 12px; border: 1px solid #dde;">%s</td>
+                  </tr>
+                  <tr style="background-color: #f0f4ff;">
+                    <td style="padding: 12px; border: 1px solid #dde; font-weight: bold;">Thành phố</td>
+                    <td style="padding: 12px; border: 1px solid #dde;">%s</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px; border: 1px solid #dde; font-weight: bold;">Ngày nhận phòng</td>
+                    <td style="padding: 12px; border: 1px solid #dde;">%s</td>
+                  </tr>
+                  <tr style="background-color: #f0f4ff;">
+                    <td style="padding: 12px; border: 1px solid #dde; font-weight: bold;">Ngày trả phòng</td>
+                    <td style="padding: 12px; border: 1px solid #dde;">%s</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px; border: 1px solid #dde; font-weight: bold;">Tổng thanh toán</td>
+                    <td style="padding: 12px; border: 1px solid #dde; color: #e53935; font-size: 16px; font-weight: bold;">%s</td>
+                  </tr>
+                  <tr style="background-color: #f0f4ff;">
+                    <td style="padding: 12px; border: 1px solid #dde; font-weight: bold;">Trạng thái</td>
+                    <td style="padding: 12px; border: 1px solid #dde; color: #2e7d32;"><strong>✅ Đã thanh toán</strong></td>
+                  </tr>
+                </table>
+                <p style="margin-top: 24px; color: #555;">Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email hỗ trợ.</p>
+                <p style="color: #555;">Chúc bạn có một kỳ nghỉ tuyệt vời! 🌟</p>
+              </div>
+              <div style="background-color: #f5f5f5; padding: 16px; text-align: center; font-size: 12px; color: #999;">
+                © 2025 Hotel Booking System
+              </div>
+            </div>
+            """.formatted(
+                customerName, bookingId, hotelName, hotelCity, checkIn, checkOut, formattedPrice);
+    }
+
     private String buildEmailContent(String hotelName, String address,
                                      String city, String country, int star) {
         return """
