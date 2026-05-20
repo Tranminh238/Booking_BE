@@ -15,4 +15,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("SELECT MIN(r.pricePerNight) FROM Room r WHERE r.hotelId = :hotelId AND r.status = 1")
     Integer findMinPriceByHotelId(@Param("hotelId") Long hotelId);
+
+        @Query("""
+                SELECT r.id, r.pricePerNight, r.quantity, r.capacity,
+                r.area, r.status, r.description,
+                rt.name as roomTypeName
+                FROM Room r
+                LEFT JOIN RoomType rt ON r.roomTypeId = rt.id
+                """)
+        List<Object[]> findRoomsWithType();
 }

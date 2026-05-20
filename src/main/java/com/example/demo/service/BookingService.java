@@ -54,6 +54,12 @@ public class BookingService {
     @Transactional
     //status: 1=WAITING, 2=CONFIRMED, 3=COMPLETE, 0=CANCELLED
     public BookingResponse createBooking(BookingRequest req) {
+        if (req.getUserId() == null) {
+            throw new IllegalArgumentException("Người dùng không được để trống");
+        }
+        if (req.getRoomId() == null) {
+            throw new IllegalArgumentException("Phòng không được để trống");
+        }
         if (req.getCheckInDate() == null || req.getCheckOutDate() == null) {
             throw new IllegalArgumentException("Ngày check-in và check-out không được để trống");
         }
@@ -175,7 +181,18 @@ public class BookingService {
         return mapToResponse(booking, details);
     }
 
-    
+    @Transactional
+    public BookingResponse confirmBooking(Long bookingId) {
+        Booking booking = findBookingOrThrow(bookingId);
+        if (booking.getStatus() != 1) {
+            throw new IllegalStateException("Chỉ có thể xác nhận booking ở trạng thái PENDING");
+        }
+        booking.setStatus(2); 
+        booking.setUpdatedAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+        return mapToResponse(booking, bookingDetailRepository.findByBookingId(bookingId));
+    }
+
     @Transactional
     public BookingResponse completeBooking(Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);

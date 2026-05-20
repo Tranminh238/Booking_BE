@@ -45,6 +45,15 @@ public class BookingController {
         }
     }
 
+    @PutMapping("/confirm/{bookingId}")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long bookingId) {
+        try {
+            return ResponseEntity.ok(bookingService.confirmBooking(bookingId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getBookingsByUser(@PathVariable Long userId) {
         try {
