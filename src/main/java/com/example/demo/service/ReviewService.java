@@ -64,6 +64,13 @@ public class ReviewService {
         updateHotelRating(hotelId);
     }
 
+    public void deleteReview(Long bookingId) {
+        Review review = reviewRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        reviewRepository.delete(review);
+        updateHotelRating(review.getHotelId());
+    }
+
     public List<ReviewResponse> getReviewsByHotel(Long hotelId) {
         return reviewRepository.findReviewResponsesByHotelId(hotelId);
     }

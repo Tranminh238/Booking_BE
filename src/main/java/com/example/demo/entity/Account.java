@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -31,6 +32,12 @@ public class Account implements UserDetails {
 
     @Column(nullable = false, length = 20)
     private String role;
+
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_created_at")
+    private LocalDateTime otpCreatedAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

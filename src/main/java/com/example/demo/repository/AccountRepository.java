@@ -14,4 +14,5 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Query("SELECT a.role FROM Account a WHERE a.username = :userName")
     String findUserRoleByUsername(@Param("userName") String userName);
+
 }

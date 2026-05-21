@@ -160,4 +160,42 @@ public class EmailService {
             </div>
             """.formatted(hotelName, address, city, country, "⭐".repeat(star));
     }
+
+    public void sendOtpEmail(String toEmail, String otp) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("🔑 Mã OTP xác minh quên mật khẩu");
+            helper.setText(buildOtpEmailContent(otp), true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Không thể gửi email OTP: " + e.getMessage());
+        }
+    }
+
+    private String buildOtpEmailContent(String otp) {
+        return """
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+              <div style="background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 24px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 20px;">🔒 Xác Minh Quên Mật Khẩu</h1>
+              </div>
+              <div style="padding: 24px;">
+                <p>Xin chào,</p>
+                <p>Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng sử dụng mã OTP dưới đây để hoàn tất quá trình xác minh:</p>
+                <div style="text-align: center; margin: 24px 0;">
+                  <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #1a73e8; padding: 10px 20px; background-color: #f0f4ff; border-radius: 8px; border: 1px dashed #1a73e8;">%s</span>
+                </div>
+                <p style="color: #e53935; font-size: 13px; font-weight: bold;">Mã OTP này có hiệu lực trong vòng 5 phút.</p>
+                <p style="color: #666; font-size: 13px;">Vui lòng không chia sẻ mã này với bất kỳ ai để bảo vệ tài khoản của bạn.</p>
+                <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
+              </div>
+              <div style="background-color: #f5f5f5; padding: 16px; text-align: center; font-size: 12px; color: #999;">
+                © 2026 Hotel Booking System
+              </div>
+            </div>
+            """.formatted(otp);
+    }
 }

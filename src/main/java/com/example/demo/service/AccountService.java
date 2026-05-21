@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.Account.request.RegistRequest;
+import com.example.demo.dto.Account.request.ChangePassword;
 import com.example.demo.dto.User.request.ClientEdditInfoRequest;
 import com.example.demo.dto.User.response.ClientInfoResponse;
 import com.example.demo.entity.User;
@@ -10,6 +11,7 @@ import com.example.demo.repository.UsersRepository;
 import com.example.demo.repository.AccountRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ public class AccountService {
     private final UsersRepository usersRepository;
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
     public void registerClient(RegistRequest registRequest) {
@@ -93,4 +96,87 @@ public class AccountService {
                 .nationality(client.getNationality())
                 .build();
     }
+    @Transactional
+    public void changePassword(String email, ChangePassword request) {
+
+        User user = usersRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new hotelException("Không tìm thấy user"));
+
+        Account account = accountRepository.findByUsername(email)
+                .orElseThrow(() ->
+                        new hotelException("Tài khoản không tồn tại"));
+
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(),
+                account.getPassword())) {
+
+            throw new hotelException("Mật khẩu hiện tại không chính xác");
+        }
+
+        if (!request.getNewPassword()
+                .equals(request.getConfirmPassword())) {
+
+            throw new hotelException("Xác nhận mật khẩu không khớp");
+        }
+
+        if (request.getCurrentPassword()
+                .equals(request.getNewPassword())) {
+
+            throw new hotelException(
+                    "Mật khẩu mới không được trùng mật khẩu cũ");
+        }
+
+        account.setPassword(
+                passwordEncoder.encode(request.getNewPassword()));
+
+        accountRepository.save(account);
+    }
+    private String generateOtp() {
+        // Tạo mã OTP 6 chữ số
+        return String.valueOf((int) (Math.random() * 900000 + 100000));
+    }
+    public void requestOtp(String email) {
+        User user = usersRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new hotelException("Không tìm thấy user"));
+        Account account = accountRepository.findByUsername(email)
+                .orElseThrow(() ->
+                        new hotelException("Tài khoản không tồn tại"));
+        String otp = generateOtp();
+
+        account.setOtp(otp);
+        account.setOtpCreatedAt(LocalDateTime.now().plusMinutes(5));
+        accountRepository.save(account);
+
+        emailService.sendOtpEmail(email, otp);
+    }
+    @Transactional
+public void verifyOtp(String email, String otp) {
+    Account account = accountRepository.findByUsername(email)
+            .orElseThrow(() ->
+                    new hotelException("Tài khoản không tồn tại"));
+
+    if (!otp.equals(account.getOtp())) {
+        throw new hotelException("Mã OTP không chính xác");
+    }
+
+    if (LocalDateTime.now().isAfter(account.getOtpCreatedAt())) {
+        throw new hotelException("Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới");
+    }
+    account.setOtp(null);
+    account.setOtpCreatedAt(null);
+    accountRepository.save(account);
+}
+@Transactional
+public void resetPassword(String email, String otp, String newPassword) {
+    verifyOtp(email, otp);
+
+    Account account = accountRepository.findByUsername(email)
+            .orElseThrow(() ->
+                    new hotelException("Tài khoản không tồn tại"));
+
+    account.setPassword(passwordEncoder.encode(newPassword));
+    accountRepository.save(account);
+}
 }

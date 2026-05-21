@@ -58,6 +58,16 @@ public class ReviewController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @DeleteMapping("/delete/{bookingId}")
+    public ResponseEntity<?> deleteReview(
+            @PathVariable Long bookingId) {
+        try {
+            reviewService.deleteReview(bookingId);
+            return ResponseEntity.ok("Xóa đánh giá thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     @GetMapping("/total/{hotelId}")
     public ResponseEntity<Integer> getTotalReview(@PathVariable Long hotelId) {
