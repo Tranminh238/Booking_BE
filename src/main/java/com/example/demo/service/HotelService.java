@@ -32,6 +32,8 @@ import com.example.demo.repository.ImageRepository;
 import com.example.demo.repository.ReviewRepository;
 import com.example.demo.repository.RoomRepository;
 import com.example.demo.repository.UsersRepository;
+import com.example.demo.entity.SearchHistory;
+import com.example.demo.repository.SearchHotelRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -53,6 +55,7 @@ public class HotelService {
     private final UsersRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final RoomRepository roomRepository;
+    private final SearchHotelRepository searchHotelRepository;
 
     @Transactional
     public void createHotel(HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
@@ -107,10 +110,12 @@ public class HotelService {
         // Upload ảnh lên Cloudinary
         if (imageFiles != null && !imageFiles.isEmpty()) {
             for (MultipartFile file : imageFiles) {
-                if (file == null || file.isEmpty()) continue;
+                if (file == null || file.isEmpty())
+                    continue;
                 FileUpLoadUtil.assertAllowedExtention(file, FileUpLoadUtil.IMAGE_PATTERN);
                 String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
-                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_" + hotel.getId() + "_" + fileName);
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file,
+                        "hotel_" + hotel.getId() + "_" + fileName);
                 Image image = Image.builder()
                         .refId(hotel.getId())
                         .refType(RefType.HOTEL)
@@ -124,9 +129,11 @@ public class HotelService {
         // Upload policy files lên Cloudinary
         if (policyFiles != null && !policyFiles.isEmpty()) {
             for (MultipartFile file : policyFiles) {
-                if (file == null || file.isEmpty()) continue;
+                if (file == null || file.isEmpty())
+                    continue;
                 String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
-                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_policy_" + hotel.getId() + "_" + fileName);
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file,
+                        "hotel_policy_" + hotel.getId() + "_" + fileName);
                 Image policyImg = Image.builder()
                         .refId(hotel.getId())
                         .refType(RefType.POLICY)
@@ -139,7 +146,8 @@ public class HotelService {
     }
 
     @Transactional
-    public BaseResponse updateHotel(Long id, HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
+    public BaseResponse updateHotel(Long id, HotelForm form, List<MultipartFile> imageFiles,
+            List<MultipartFile> policyFiles) {
 
         Hotel hotel = hotelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hotel not found"));
@@ -174,7 +182,8 @@ public class HotelService {
             hotelAddressRepository.save(address);
         }
 
-        if (form.getIdentificationDocuments() != null || form.getCheckInInstructions() != null || form.getSmokePolicy() != null || form.getPetPolicy() != null) {
+        if (form.getIdentificationDocuments() != null || form.getCheckInInstructions() != null
+                || form.getSmokePolicy() != null || form.getPetPolicy() != null) {
             HotelPolicy policy = hotelPolicyRepository.findByHotelId(hotel.getId())
                     .orElse(HotelPolicy.builder().hotelId(hotel.getId()).build());
             if (form.getIdentificationDocuments() != null)
@@ -191,10 +200,12 @@ public class HotelService {
         if (imageFiles != null && !imageFiles.isEmpty()) {
             imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.HOTEL);
             for (MultipartFile file : imageFiles) {
-                if (file == null || file.isEmpty()) continue;
+                if (file == null || file.isEmpty())
+                    continue;
                 FileUpLoadUtil.assertAllowedExtention(file, FileUpLoadUtil.IMAGE_PATTERN);
                 String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
-                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_" + hotel.getId() + "_" + fileName);
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file,
+                        "hotel_" + hotel.getId() + "_" + fileName);
                 Image image = Image.builder()
                         .refId(hotel.getId())
                         .refType(RefType.HOTEL)
@@ -208,9 +219,11 @@ public class HotelService {
         if (policyFiles != null && !policyFiles.isEmpty()) {
             imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.POLICY);
             for (MultipartFile file : policyFiles) {
-                if (file == null || file.isEmpty()) continue;
+                if (file == null || file.isEmpty())
+                    continue;
                 String fileName = FileUpLoadUtil.getFileName(file.getOriginalFilename());
-                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file, "hotel_policy_" + hotel.getId() + "_" + fileName);
+                CloudinaryResponse uploaded = cloudinaryService.uploadFile(file,
+                        "hotel_policy_" + hotel.getId() + "_" + fileName);
                 Image policyImg = Image.builder()
                         .refId(hotel.getId())
                         .refType(RefType.POLICY)
@@ -230,20 +243,19 @@ public class HotelService {
         hotel.setStatus(2);
         hotelRepository.save(hotel);
         HotelAddress address = hotelAddressRepository.findByHotelId(hotelId).orElse(null);
-            String addressStr = address != null ? address.getDistrict() : "N/A";
-            String city      = address != null ? address.getCity()     : "N/A";
-            String country   = address != null ? address.getCountry()  : "N/A";
+        String addressStr = address != null ? address.getDistrict() : "N/A";
+        String city = address != null ? address.getCity() : "N/A";
+        String country = address != null ? address.getCountry() : "N/A";
 
         userRepository.findById(hotel.getUserId()).ifPresent(user -> {
             emailService.sendHotelApprovedEmail(
-                user.getEmail(),
-                hotel.getName(),
-                addressStr,
-                city,
-                country,
-                hotel.getStar()
-            );
-    });
+                    user.getEmail(),
+                    hotel.getName(),
+                    addressStr,
+                    city,
+                    country,
+                    hotel.getStar());
+        });
         return new BaseResponse(200, "Hotel browsed successfully", mapToResponse(hotel));
     }
 
@@ -311,8 +323,12 @@ public class HotelService {
     public Page<HotelFilterResponse> filterHotels(HotelFilter request, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<HotelFilterResponse> responses = filterRepository.filterHotel(pageable, request);
-        System.out.println(request.getCity().length());
-        System.out.println(request.getCity());
+
+        if (request.getCity() != null) {
+            System.out.println(request.getCity().length());
+            System.out.println(request.getCity());
+        }
+
         responses.getContent().forEach(hotel -> {
             List<String> images = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.HOTEL)
                     .stream()
@@ -320,18 +336,29 @@ public class HotelService {
                     .collect(Collectors.toList());
             hotel.setImages(images);
         });
-        
+
+        if (request.getUserId() != null && page == 0) {
+            String keyword = (request.getName() != null && !request.getName().trim().isEmpty())
+                    ? request.getName().trim()
+                    : request.getCity();
+
+            SearchHistory searchHistory = SearchHistory.builder()
+                    .userId(request.getUserId())
+                    .keyword(keyword)
+                    .build();
+            searchHotelRepository.save(searchHistory);
+        }
+
         return responses;
     }
 
     public void updateAverageRating(Long hotelId) {
         double avg = hotelRepository.getAvgRating(hotelId);
         Hotel hotel = hotelRepository.findById(hotelId)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn"));
         hotel.setRating_avg((float) avg);
         hotelRepository.save(hotel);
     }
-
 
     private HotelResponse mapToResponse(Hotel hotel) {
         HotelAddress hotelAddr = hotelAddressRepository.findByHotelId(hotel.getId()).orElse(null);
@@ -340,7 +367,7 @@ public class HotelService {
         String district = null;
         String city = null;
         String country = null;
-        
+
         if (hotelAddr != null) {
             district = hotelAddr.getDistrict();
             city = hotelAddr.getCity();
@@ -390,6 +417,10 @@ public class HotelService {
                 .created_at(hotel.getCreated_at())
                 .updated_at(hotel.getUpdated_at())
                 .build();
+    }
+
+    public HotelResponse toResponse(Hotel hotel) {
+        return mapToResponse(hotel);
     }
 
     private Time parseTime(String time) {

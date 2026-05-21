@@ -29,4 +29,5 @@ public class HotelFilter {
     private String order;
     private Integer page;
     private Integer size;
+    private Long userId;
 }

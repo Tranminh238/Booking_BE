@@ -75,14 +75,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // Cấu hình session management - STATELESS vì dùng JWT
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**",          
-                                "/client/**",   
+                                "/auth/**",
+                                "/client/**",
                                 "/api/hotel/**",
                                 "/api/room/**",
                                 "/api/amenities/**",
@@ -91,12 +89,13 @@ public class SecurityConfig {
                                 "/api/room-types/**",
                                 "/api/promotions/**",
                                 "/api/thongke/**",
-                                "/api/chatbot/**"
-                        ).permitAll()
+                                "/api/chatbot/**",
+                                "/api/recommend/**",
+                                "/api/wishlist/**")
+                        .permitAll()
 
                         // Tất cả các request còn lại cần authentication
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
 
                 // Thêm custom authentication provider
                 .authenticationProvider(authenticationProvider())

@@ -51,9 +51,9 @@ public class HotelDataLoaderService {
 
         for (Hotel hotel : activeHotels) {
             context.append("---\n");
-            context.append(String.format("🏨 KHÁCH SẠN: %s (ID: %d)\n", hotel.getName(), hotel.getId()));
-            context.append(String.format("   Số sao: %d ⭐\n", hotel.getStar() != null ? hotel.getStar() : 0));
-            context.append(String.format("   Điểm đánh giá trung bình: %.1f/10\n",
+            context.append(String.format("KHÁCH SẠN: %s\n", hotel.getName()));
+            context.append(String.format("Số sao: %d \n", hotel.getStar() != null ? hotel.getStar() : 0));
+            context.append(String.format("Điểm đánh giá trung bình: %.1f/10\n",
                     hotel.getRating_avg() != null ? hotel.getRating_avg() : 0.0));
 
             // Giờ check-in / check-out
@@ -75,18 +75,19 @@ public class HotelDataLoaderService {
             }
 
             // Địa chỉ
-            hotelAddressRepository.findByHotelId(hotel.getId()).ifPresent(addr ->
-                context.append(String.format("   📍 Địa chỉ: %s, %s, %s\n",
-                        addr.getDistrict(), addr.getCity(), addr.getCountry()))
-            );
+            hotelAddressRepository.findByHotelId(hotel.getId())
+                    .ifPresent(addr -> context.append(String.format(" Địa chỉ: %s, %s, %s\n",
+                            addr.getDistrict(), addr.getCity(), addr.getCountry())));
 
             // Chính sách khách sạn
             hotelPolicyRepository.findByHotelId(hotel.getId()).ifPresent(policy -> {
-                context.append("   📋 Chính sách:\n");
+                context.append("Chính sách:\n");
                 if (policy.getIdentificationDocuments() != null)
-                    context.append(String.format("      - Giấy tờ cần thiết: %s\n", policy.getIdentificationDocuments()));
+                    context.append(
+                            String.format("      - Giấy tờ cần thiết: %s\n", policy.getIdentificationDocuments()));
                 if (policy.getCheckInInstructions() != null)
-                    context.append(String.format("      - Hướng dẫn nhận phòng: %s\n", policy.getCheckInInstructions()));
+                    context.append(
+                            String.format("      - Hướng dẫn nhận phòng: %s\n", policy.getCheckInInstructions()));
                 if (policy.getSmokePolicy() != null)
                     context.append(String.format("      - Chính sách hút thuốc: %s\n", policy.getSmokePolicy()));
                 if (policy.getPetPolicy() != null)
@@ -96,7 +97,7 @@ public class HotelDataLoaderService {
             // Tiện nghi khách sạn (dùng đúng method có sẵn trong repository)
             List<String> amenityNames = hotelAmenitiesRepository.findAmenityNamesByHotelId(hotel.getId());
             if (!amenityNames.isEmpty()) {
-                context.append(String.format("   🛎️ Tiện nghi: %s\n", String.join(", ", amenityNames)));
+                context.append(String.format("    Tiện nghi: %s\n", String.join(", ", amenityNames)));
             }
 
             // Phòng của khách sạn
@@ -106,16 +107,19 @@ public class HotelDataLoaderService {
                     .collect(Collectors.toList());
 
             if (!availableRooms.isEmpty()) {
-                context.append(String.format("   🛏️ Phòng có sẵn (%d loại phòng):\n", availableRooms.size()));
+                context.append(String.format("    Phòng có sẵn (%d loại phòng):\n", availableRooms.size()));
                 for (Room room : availableRooms) {
                     String roomTypeName = roomTypeRepository.findById(room.getRoomTypeId())
                             .map(RoomType::getName)
                             .orElse("Không xác định");
                     context.append(String.format("      • Loại phòng: %s | ", roomTypeName));
-                    context.append(String.format("Giá: %,d VNĐ/đêm | ", room.getPricePerNight() != null ? room.getPricePerNight() : 0));
-                    context.append(String.format("Sức chứa: %d người | ", room.getCapacity() != null ? room.getCapacity() : 0));
+                    context.append(String.format("Giá: %,d VNĐ/đêm | ",
+                            room.getPricePerNight() != null ? room.getPricePerNight() : 0));
+                    context.append(String.format("Sức chứa: %d người | ",
+                            room.getCapacity() != null ? room.getCapacity() : 0));
                     context.append(String.format("Diện tích: %d m² | ", room.getArea() != null ? room.getArea() : 0));
-                    context.append(String.format("Số lượng: %d phòng\n", room.getQuantity() != null ? room.getQuantity() : 0));
+                    context.append(
+                            String.format("Số lượng: %d phòng\n", room.getQuantity() != null ? room.getQuantity() : 0));
                     if (room.getDescription() != null && !room.getDescription().isEmpty()) {
                         String roomDesc = room.getDescription().length() > 150
                                 ? room.getDescription().substring(0, 150) + "..."
@@ -124,7 +128,7 @@ public class HotelDataLoaderService {
                     }
                 }
             } else {
-                context.append("   🛏️ Hiện không có phòng nào khả dụng\n");
+                context.append("    Hiện không có phòng nào khả dụng\n");
             }
 
             context.append("\n");
@@ -141,18 +145,20 @@ public class HotelDataLoaderService {
         return """
                 Bạn là trợ lý AI thân thiện của hệ thống đặt phòng khách sạn.
                 Nhiệm vụ của bạn là tư vấn và cung cấp thông tin về các khách sạn, phòng, tiện nghi, chính sách cho khách hàng.
-                
+
                 NGUYÊN TẮC TRẢ LỜI:
                 1. Chỉ trả lời các câu hỏi liên quan đến khách sạn, phòng, đặt phòng, du lịch.
                 2. Luôn trả lời bằng tiếng Việt, lịch sự và chuyên nghiệp.
                 3. Nếu khách hỏi thông tin không có trong dữ liệu, hãy nói rõ bạn không có thông tin đó.
-                4. Sử dụng emoji phù hợp để câu trả lời sinh động hơn.
-                5. Khi so sánh hoặc gợi ý, hãy dựa vào dữ liệu thực tế bên dưới.
-                6. Định dạng giá tiền theo kiểu: 500,000 VNĐ (có dấu phẩy phân cách hàng nghìn).
-                7. Nếu câu hỏi không liên quan đến khách sạn/du lịch, hãy lịch sự từ chối và hướng dẫn khách hỏi đúng chủ đề.
-                8. Khi liệt kê nhiều mục, hãy dùng định dạng gọn gàng với dấu gạch đầu dòng.
-                
-                """ + hotelContext;
+                4. Khi so sánh hoặc gợi ý, hãy dựa vào dữ liệu thực tế bên dưới.
+                5. Định dạng giá tiền theo kiểu: 500,000 VNĐ (có dấu phẩy phân cách hàng nghìn).
+                6. Nếu câu hỏi không liên quan trực tiếp đến khách sạn/du lịch, hãy lịch sự từ chối và hướng dẫn khách hỏi đúng chủ đề.
+                7. Khi liệt kê nhiều mục, hãy dùng định dạng gọn gàng với dấu gạch đầu dòng.
+                8. KHÔNG được đưa ra số điện thoại hoặc email của khách sạn.
+                9. Không hiển thị ID nội bộ của khách sạn hoặc phòng cho khách hàng.
+                10. Không sử dụng emoji trong câu trả lời.
+                """
+                + hotelContext;
     }
 
     /**
@@ -191,7 +197,7 @@ public class HotelDataLoaderService {
             return new ChatResponse(response, sessionId);
         } catch (Exception e) {
             log.error("Lỗi khi gọi Gemini API: {}", e.getMessage(), e);
-            String errorMsg = "Xin lỗi, tôi đang gặp sự cố kết nối. Vui lòng thử lại sau ít phút! 🙏";
+            String errorMsg = "Xin lỗi, tôi đang gặp sự cố kết nối. Vui lòng thử lại sau ít phút!";
             return new ChatResponse(errorMsg, sessionId);
         }
     }
