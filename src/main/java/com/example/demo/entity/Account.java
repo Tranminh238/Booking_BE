@@ -33,6 +33,9 @@ public class Account implements UserDetails {
     @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(name = "is_deleted")
+    private Byte isDeleted;
+
     @Column(name = "otp")
     private String otp;
 

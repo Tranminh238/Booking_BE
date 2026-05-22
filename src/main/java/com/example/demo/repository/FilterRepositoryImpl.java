@@ -3,7 +3,8 @@ package com.example.demo.repository;
 import com.example.demo.Util.QueryUtil;
 import com.example.demo.dto.Hotel.request.HotelFilter;
 import com.example.demo.dto.Hotel.response.HotelFilterResponse;
-
+import com.example.demo.service.BookingService;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @Repository
 @RequiredArgsConstructor
 public class FilterRepositoryImpl implements FilterRepository {
+    private final BookingService bookingService;
     private final NamedParameterJdbcTemplate jdbcTemplate;
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -33,7 +35,8 @@ public class FilterRepositoryImpl implements FilterRepository {
                         ha2.city                            as hotelCity,
                         h.rating_avg                        as hotelRatingAvg,
                         GROUP_CONCAT(DISTINCT rt.name)      as roomTypeName,
-                        MIN(r.price_per_night * (100 - COALESCE((SELECT MAX(p.discount_percentage) FROM promotions p WHERE p.room_id = r.id AND p.status = 1 AND p.start_date <= CURRENT_DATE() AND p.end_date >= CURRENT_DATE() AND p.quantity_used < p.quantity_room), 0)) / 100) as roomPricePerNight,
+                        MIN(r.id)                           as cheapestRoomId,
+                        MIN(r.price_per_night)              as roomPricePerNight,
                         MIN(r.price_per_night)              as originalRoomPricePerNight,
                         GROUP_CONCAT(DISTINCT a.name)       as hotelAmenities
 
@@ -70,7 +73,7 @@ public class FilterRepositoryImpl implements FilterRepository {
         }
 
         if (Objects.nonNull(request.getMinPrice()) || Objects.nonNull(request.getMaxPrice())) {
-            String discountQuery = "(SELECT MAX(p.discount_percentage) FROM promotions p WHERE p.room_id = r.id AND p.status = 1 AND p.start_date <= CURRENT_DATE() AND p.end_date >= CURRENT_DATE() AND p.quantity_used < p.quantity_room)";
+            String discountQuery = "(SELECT MAX(p.discount_percentage) FROM promotions p WHERE p.room_id = r.id AND p.status = 1 AND p.start_date <= :checkInDate AND p.end_date >= :checkInDate AND p.quantity_used < p.quantity_room)";
             if (Objects.nonNull(request.getMinPrice()) && Objects.nonNull(request.getMaxPrice())) {
                 whereList.add("(r.price_per_night * (100 - COALESCE(" + discountQuery + ", 0)) / 100) >= :minPrice AND (r.price_per_night * (100 - COALESCE(" + discountQuery + ", 0)) / 100) <= :maxPrice");
             } else if (Objects.nonNull(request.getMinPrice())) {
@@ -145,6 +148,7 @@ public class FilterRepositoryImpl implements FilterRepository {
 
     private Map<String, Object> createParams(HotelFilter request) {
         Map<String, Object> params = new HashMap<>();
+        params.put("checkInDate", request.getCheckInDate() != null ? request.getCheckInDate() : LocalDate.now());
         if (StringUtils.isNotBlank(request.getName())) {
             String reqName = java.text.Normalizer.normalize(request.getName(), java.text.Normalizer.Form.NFC);
             params.put("name", "%" + reqName + "%");
@@ -210,4 +214,5 @@ public class FilterRepositoryImpl implements FilterRepository {
 
         return new PageImpl<>(hotelFilterResponses, pageable, hotelFilterResponses.size());
     }
+
 }

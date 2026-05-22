@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.base.BaseResponse;
 import com.example.demo.dto.Room.response.RoomResponse;
+import com.example.demo.dto.Room.response.RoomDiscountedPriceResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -118,6 +121,34 @@ public class RoomController {
         try {
             Page<RoomResponse> rooms = roomService.getAllRooms(page, size);
             return ResponseEntity.ok(new BaseResponse(200, "Success", rooms));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new BaseResponse(500, "Error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/discounted-price")
+    public ResponseEntity<BaseResponse> getDiscountedPriceForRoom(
+            @PathVariable Long id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut
+    ) {
+        try {
+            RoomDiscountedPriceResponse response = roomService.getDiscountedPriceForRoom(id, checkIn, checkOut);
+            return ResponseEntity.ok(new BaseResponse(200, "Success", response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new BaseResponse(500, "Error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/hotel/{hotelId}/discounted-prices")
+    public ResponseEntity<BaseResponse> getDiscountedPricesForHotel(
+            @PathVariable Long hotelId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut
+    ) {
+        try {
+            List<RoomDiscountedPriceResponse> response = roomService.getDiscountedPricesForHotel(hotelId, checkIn, checkOut);
+            return ResponseEntity.ok(new BaseResponse(200, "Success", response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new BaseResponse(500, "Error", e.getMessage()));
         }

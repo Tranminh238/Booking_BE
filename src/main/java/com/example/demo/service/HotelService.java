@@ -1,9 +1,11 @@
 package com.example.demo.service;
 
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import com.example.demo.entity.Hotel;
 import com.example.demo.entity.HotelAddress;
 import com.example.demo.entity.HotelAmenities;
 import com.example.demo.entity.Image;
+import com.example.demo.entity.Promotion;
 import com.example.demo.entity.HotelPolicy;
 import com.example.demo.entity.User;
 import com.example.demo.enums.ImageEmun.RefType;
@@ -32,6 +35,7 @@ import com.example.demo.repository.ImageRepository;
 import com.example.demo.repository.ReviewRepository;
 import com.example.demo.repository.RoomRepository;
 import com.example.demo.repository.UsersRepository;
+import com.example.demo.repository.PromotionRepository;
 import com.example.demo.entity.SearchHistory;
 import com.example.demo.repository.SearchHotelRepository;
 
@@ -56,6 +60,7 @@ public class HotelService {
     private final ReviewRepository reviewRepository;
     private final RoomRepository roomRepository;
     private final SearchHotelRepository searchHotelRepository;
+    private final PromotionRepository promotionRepository;
 
     @Transactional
     public void createHotel(HotelForm form, List<MultipartFile> imageFiles, List<MultipartFile> policyFiles) {
@@ -328,6 +333,11 @@ public class HotelService {
             System.out.println(request.getCity().length());
             System.out.println(request.getCity());
         }
+        LocalDate checkIn = request.getCheckInDate();
+        LocalDate checkOut = request.getCheckOutDate();
+        Integer totalNights = (checkIn != null && checkOut != null && checkOut.isAfter(checkIn))
+                ? (int) (checkOut.toEpochDay() - checkIn.toEpochDay())
+                : null;
 
         responses.getContent().forEach(hotel -> {
             List<String> images = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.HOTEL)
@@ -335,7 +345,10 @@ public class HotelService {
                     .map(Image::getImageUrl)
                     .collect(Collectors.toList());
             hotel.setImages(images);
+        
+
         });
+
 
         if (request.getUserId() != null && page == 0) {
             String keyword = (request.getName() != null && !request.getName().trim().isEmpty())
@@ -351,6 +364,7 @@ public class HotelService {
 
         return responses;
     }
+
 
     public void updateAverageRating(Long hotelId) {
         double avg = hotelRepository.getAvgRating(hotelId);

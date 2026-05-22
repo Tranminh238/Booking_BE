@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 
 @Service
 @RequiredArgsConstructor
@@ -108,7 +110,16 @@ public class UserService {
         }
     }
 
-    public List<UserResponse> getAllUser() {
-        return userRepository.findAllUser();
+    public Page<UserResponse> getAllUser(Pageable pageable) {
+        return userRepository.findAllUser(pageable);
     }
+
+    public Page<UserResponse> getAllUserActive(Pageable pageable) {
+        return userRepository.findAllUserActive(pageable);
+    }
+
+    public Page<UserResponse> getAllUserInactive(Pageable pageable) {
+        return userRepository.findAllUserInactive(pageable);
+    }
+
 }

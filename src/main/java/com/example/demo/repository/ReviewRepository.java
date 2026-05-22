@@ -1,5 +1,7 @@
 package com.example.demo.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,52 +23,53 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByBookingId(Long bookingId);
 
     @Query("""
-        SELECT new com.example.demo.dto.review.Response.ReviewResponse(
-            r.id, r.bookingId, r.hotelId, h.name, ha.city, null,
-            u.firstName, u.lastName,
-            r.rating, r.comment, r.createdAt
-        )
-        FROM Review r
-        LEFT JOIN Hotel h ON h.id = r.hotelId
-        LEFT JOIN User u ON u.id = r.userId
-        LEFT JOIN HotelAddress ha ON ha.hotelId = h.id
-        WHERE r.hotelId = :hotelId
-    """)
-    List<ReviewResponse> findReviewResponsesByHotelId(@Param("hotelId") Long hotelId);
+                SELECT new com.example.demo.dto.review.Response.ReviewResponse(
+                    r.id, r.bookingId, r.hotelId, h.name, ha.city, null,
+                    u.firstName, u.lastName,
+                    r.rating, r.comment, r.createdAt
+                )
+                FROM Review r
+                LEFT JOIN Hotel h ON h.id = r.hotelId
+                LEFT JOIN User u ON u.id = r.userId
+                LEFT JOIN HotelAddress ha ON ha.hotelId = h.id
+                WHERE r.hotelId = :hotelId
+                ORDER BY r.createdAt DESC
+            """)
+    Page<ReviewResponse> findReviewResponsesByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
     @Query("""
-        SELECT COUNT(r.id)
-        FROM Review r
-        WHERE r.hotelId = :hotelId
-    """)
+                SELECT COUNT(r.id)
+                FROM Review r
+                WHERE r.hotelId = :hotelId
+            """)
     int totalReview(@Param("hotelId") Long hotelId);
 
     @Query("""
-        SELECT new com.example.demo.dto.review.Response.ReviewResponse(
-            r.id, r.bookingId, r.hotelId, h.name, ha.city, null,
-            u.firstName, u.lastName,
-            r.rating, r.comment, r.createdAt
-        )
-        FROM Review r
-        LEFT JOIN Hotel h ON h.id = r.hotelId
-        LEFT JOIN User u ON u.id = r.userId
-        LEFT JOIN HotelAddress ha ON ha.hotelId = h.id
-        WHERE r.bookingId = :bookingId
-    """)
+                SELECT new com.example.demo.dto.review.Response.ReviewResponse(
+                    r.id, r.bookingId, r.hotelId, h.name, ha.city, null,
+                    u.firstName, u.lastName,
+                    r.rating, r.comment, r.createdAt
+                )
+                FROM Review r
+                LEFT JOIN Hotel h ON h.id = r.hotelId
+                LEFT JOIN User u ON u.id = r.userId
+                LEFT JOIN HotelAddress ha ON ha.hotelId = h.id
+                WHERE r.bookingId = :bookingId
+            """)
     ReviewResponse findReviewByBookingId(@Param("bookingId") Long bookingId);
 
     @Query("""
-        SELECT new com.example.demo.dto.review.Response.ReviewResponse(
-            r.id, r.bookingId, r.hotelId, h.name, ha.city, null,
-            u.firstName, u.lastName,
-            r.rating, r.comment, r.createdAt
-        )
-        FROM Review r
-        LEFT JOIN Hotel h ON h.id = r.hotelId
-        LEFT JOIN User u ON u.id = r.userId
-        LEFT JOIN HotelAddress ha ON ha.hotelId = h.id
-        WHERE r.userId = :userId
-        ORDER BY r.createdAt DESC
-    """)
+                SELECT new com.example.demo.dto.review.Response.ReviewResponse(
+                    r.id, r.bookingId, r.hotelId, h.name, ha.city, null,
+                    u.firstName, u.lastName,
+                    r.rating, r.comment, r.createdAt
+                )
+                FROM Review r
+                LEFT JOIN Hotel h ON h.id = r.hotelId
+                LEFT JOIN User u ON u.id = r.userId
+                LEFT JOIN HotelAddress ha ON ha.hotelId = h.id
+                WHERE r.userId = :userId
+                ORDER BY r.createdAt DESC
+            """)
     List<ReviewResponse> findReviewResponsesByUserId(@Param("userId") Long userId);
 }

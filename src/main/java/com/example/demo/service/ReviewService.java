@@ -3,6 +3,9 @@ package com.example.demo.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.review.Request.ReviewRequest;
@@ -71,8 +74,8 @@ public class ReviewService {
         updateHotelRating(review.getHotelId());
     }
 
-    public List<ReviewResponse> getReviewsByHotel(Long hotelId) {
-        return reviewRepository.findReviewResponsesByHotelId(hotelId);
+    public Page<ReviewResponse> getReviewsByHotel(Long hotelId, Pageable pageable) {
+        return reviewRepository.findReviewResponsesByHotelId(hotelId, pageable);
     }
 
     public List<ReviewResponse> getReviewsByUser(Long userId) {

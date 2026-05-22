@@ -32,6 +32,8 @@ import com.example.demo.repository.ImageRepository;
 import com.example.demo.repository.HotelRepository;
 import com.example.demo.repository.HotelAddressRepository;
 import com.example.demo.repository.UsersRepository;
+import com.example.demo.repository.PromotionRepository;
+import java.util.Comparator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -50,6 +52,7 @@ public class BookingService {
     private final UsersRepository usersRepository;
     private final HotelRepository hotelRepository;
     private final HotelAddressRepository hotelAddressRepository;
+    private final PromotionRepository promotionRepository;
 
     @Transactional
     //status: 1=WAITING, 2=CONFIRMED, 3=COMPLETE, 0=CANCELLED
@@ -89,17 +92,18 @@ public class BookingService {
             throw new RuntimeException("Phòng không đủ số lượng trong khoảng ngày đã chọn");
         }
 
-        long nights = req.getCheckInDate().toEpochDay() - LocalDate.now().toEpochDay();
-        long totalNights = req.getCheckOutDate().toEpochDay() - req.getCheckInDate().toEpochDay();
         
         int basePrice = room.getPricePerNight() != null ? room.getPricePerNight() : 0;
-        Promotion bestPromo = promotionService.getBestPromotion(req.getRoomId()).orElse(null);
-        int pricePerNight = basePrice;
-        if (bestPromo != null && bestPromo.getQuantityUsed() < bestPromo.getQuantityRoom()) {
-            pricePerNight = basePrice - (basePrice * bestPromo.getDiscountPercentage() / 100);
-        }
+        int totalPrice = (int) Math.round(calculateTotalPrice(
+            req.getRoomId(),
+            req.getCheckInDate(),
+            req.getCheckOutDate(),
+            basePrice,
+            numRoom
+        ));
+        int displayPricePerNight = (int) Math.round(getPriceForDate(req.getRoomId(), req.getCheckInDate(), basePrice));
 
-        int totalPrice = (int) (pricePerNight * numRoom * totalNights);
+
 
         Booking booking = Booking.builder()
                 .userId(req.getUserId())
@@ -131,7 +135,7 @@ public class BookingService {
                 .bookingId(booking.getId())
                 .roomId(req.getRoomId())
                 .numRoom(numRoom)
-                .pricePerNight(pricePerNight)
+                .pricePerNight(displayPricePerNight)
                 .numAdults(req.getNumAdults() != null ? req.getNumAdults() : 1)
                 .numChildren(req.getNumChildren() != null ? req.getNumChildren() : 0)
                 .createdAt(LocalDateTime.now())
@@ -143,11 +147,33 @@ public class BookingService {
 
         return mapToResponse(booking, List.of(detail));
     }
+    private double calculateTotalPrice(Long roomId, LocalDate checkIn, LocalDate checkOut,
+                                 int basePrice, int numRoom) {
+        double total = 0;
+        LocalDate current = checkIn;
+
+        // Mỗi vòng lặp = 1 đêm (từ current đến current+1)
+        while (current.isBefore(checkOut)) {
+            double priceThisNight = getPriceForDate(roomId, current, basePrice);
+            total += priceThisNight * numRoom;
+            current = current.plusDays(1);
+        }
+
+        return total;
+    }
+
+    private double getPriceForDate(Long roomId, LocalDate date, int basePrice) {
+        return promotionRepository.findActivePromotionsForRoomAndDate(roomId, date)
+                .stream()
+                .filter(p -> p.getQuantityUsed() < p.getQuantityRoom())
+                .max(Comparator.comparingInt(Promotion::getDiscountPercentage))
+                .map(p -> basePrice * (100 - p.getDiscountPercentage()) / 100.0)
+                .orElse((double) basePrice);
+    }
 
 
     public List<BookingDetailDTO> getBookingsByUser(Long userId) {
         List<BookingDetailDTO> bookings = bookingRepository.findByUserId(userId);
-        // Fetch ảnh khách sạn riêng để tránh duplicate rows khi JOIN
         bookings.forEach(b -> {
             if (b.getHotelId() != null) {
                 List<String> urls = imageRepository
@@ -199,6 +225,9 @@ public class BookingService {
         if (booking.getStatus() != 2) {
             throw new IllegalStateException("Chỉ có thể hoàn thành booking ở trạng thái CONFIRMED");
         }
+        if(booking.getCheckOutDate().isAfter(LocalDate.now())) {
+            throw new IllegalStateException("Không thể hoàn thành booking sau ngày check-out");
+        }
         booking.setStatus(3); 
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
@@ -233,7 +262,6 @@ public class BookingService {
     public void payment(boolean isPaid, Long bookingId) {
         Booking booking = findBookingOrThrow(bookingId);
         if (isPaid) {
-            booking.setStatus(2);
             booking.setUpdatedAt(LocalDateTime.now());
             bookingRepository.save(booking);
             Payment payment = paymentRepository.findByBookingId(bookingId).orElseThrow();
@@ -285,7 +313,7 @@ public class BookingService {
             bookingRepository.save(booking);
             // Cập nhật payment thành thất bại
             paymentRepository.findByBookingId(bookingId).ifPresent(p -> {
-                p.setStatus(0);
+                p.setStatus(1);
                 p.setUpdatedAt(LocalDateTime.now());
                 paymentRepository.save(p);
             });

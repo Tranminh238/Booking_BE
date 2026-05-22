@@ -1,6 +1,7 @@
 package com.example.demo.dto.Account.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ public class RegistRequest {
     private String email;
 
     @NotBlank(message = "Password không được để trống")
+    @Size(min = 8, message = "Password phải có ít nhất 8 ký tự")
     private String password;
 
     @NotBlank(message = "ConfirmPassword không được để trống")

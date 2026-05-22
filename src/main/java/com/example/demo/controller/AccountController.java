@@ -107,4 +107,22 @@ public class AccountController {
             return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
         }
     }
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<BaseResponse> softDeleteAccount(@PathVariable Long id){
+        try {
+            accountService.softDeleteAccount(id);
+            return ResponseEntity.ok(new BaseResponse(200, "Success", null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
+        }
+    }
+    @PostMapping("/restore/{id}")
+    public ResponseEntity<BaseResponse> softRestoreAccount(@PathVariable Long id){
+        try {
+            accountService.softRestoreAccount(id);
+            return ResponseEntity.ok(new BaseResponse(200, "Success", null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
+        }
+    }
 }

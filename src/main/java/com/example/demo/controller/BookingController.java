@@ -102,19 +102,49 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/payment/callback")
-    public void paymentCallback(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        // Xác thực chữ ký VNPay và cập nhật trạng thái Booking + Payment trong DB
-        vnPayService.resultPayment(request);
+    // @GetMapping("/payment/callback")
+    // public void paymentCallback(HttpServletRequest request, HttpServletResponse response)
+    //         throws IOException {
+    //     // Xác thực chữ ký VNPay và cập nhật trạng thái Booking + Payment trong DB
+    //     vnPayService.resultPayment(request);
 
-        // Sau khi cập nhật DB, redirect browser về trang frontend kèm toàn bộ query params của VNPay
-        // Frontend sẽ parse các params này để hiển thị màn hình kết quả
-        String queryString = request.getQueryString(); // vd: vnp_ResponseCode=00&vnp_Amount=...
-        String frontendUrl = "http://localhost:3000/payment";
+    //     // Sau khi cập nhật DB, redirect browser về trang frontend kèm toàn bộ query params của VNPay
+    //     // Frontend sẽ parse các params này để hiển thị màn hình kết quả
+    //     String queryString = request.getQueryString(); // vd: vnp_ResponseCode=00&vnp_Amount=...
+    //     String frontendUrl = "http://localhost:3000/payment";
+    //     if (queryString != null && !queryString.isEmpty()) {
+    //         frontendUrl += "?" + queryString;
+    //     }
+    //     response.sendRedirect(frontendUrl);
+    // }
+    @GetMapping("/payment/callback")
+    public void paymentCallback(HttpServletRequest request,
+                            HttpServletResponse response) throws IOException {
+
+    // cập nhật DB
+    vnPayService.resultPayment(request);
+
+    // lấy mã kết quả
+    String responseCode = request.getParameter("vnp_ResponseCode");
+
+        // lấy toàn bộ query params
+        String queryString = request.getQueryString();
+
+        String frontendUrl;
+
+        // Thành công
+        if ("00".equals(responseCode)) {
+            frontendUrl = "http://localhost:3000/payment";
+        } else {
+            // Thất bại
+            frontendUrl = "http://localhost:3000/payment";
+        }
+
+        // gắn query params
         if (queryString != null && !queryString.isEmpty()) {
             frontendUrl += "?" + queryString;
         }
+
         response.sendRedirect(frontendUrl);
     }
 }

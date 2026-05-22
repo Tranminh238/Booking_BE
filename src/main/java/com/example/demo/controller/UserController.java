@@ -8,7 +8,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/auth")
@@ -36,7 +38,20 @@ public class UserController {
     }
 
     @GetMapping("/all-user")
-    public List<UserResponse> getAllUsers() {
-        return userService.getAllUser();
+    public Page<UserResponse> getAllUsers(
+            @PageableDefault(size = 10) Pageable pageable) {
+        return userService.getAllUser(pageable);
+    }
+
+    @GetMapping("/all-user-active")
+    public Page<UserResponse> getAllUserActive(
+            @PageableDefault(size = 10) Pageable pageable) {
+        return userService.getAllUserActive(pageable);
+    }
+
+    @GetMapping("/all-user-inactive")
+    public Page<UserResponse> getAllUserInactive(
+            @PageableDefault(size = 10) Pageable pageable) {
+        return userService.getAllUserInactive(pageable);
     }
 }

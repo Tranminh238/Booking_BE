@@ -75,12 +75,15 @@ public class PromotionService {
         p.setStatus(2);
         promotionRepository.save(p);
     }
+    public Optional<Promotion> getBestPromotionForDate(Long roomId, LocalDate date) {
+        return promotionRepository.findActivePromotionsForRoomAndDate(roomId, date)
+                .stream()
+                .max(Comparator.comparingInt(Promotion::getDiscountPercentage));
+    }
 
     public Optional<Promotion> getBestPromotion(Long roomId) {
-
         List<Promotion> promotions = promotionRepository.findByRoomId(roomId);
         LocalDate today = LocalDate.now();
-
         return promotions.stream()
                 .filter(p -> p.getStartDate().isBefore(today))
                 .filter(p -> p.getEndDate().isAfter(today))

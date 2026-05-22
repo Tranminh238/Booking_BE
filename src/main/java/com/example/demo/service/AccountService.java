@@ -12,6 +12,8 @@ import com.example.demo.repository.AccountRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -168,15 +170,31 @@ public void verifyOtp(String email, String otp) {
     account.setOtpCreatedAt(null);
     accountRepository.save(account);
 }
-@Transactional
-public void resetPassword(String email, String otp, String newPassword) {
-    verifyOtp(email, otp);
+    @Transactional
+    public void resetPassword(String email, String otp, String newPassword) {
+        verifyOtp(email, otp);
 
-    Account account = accountRepository.findByUsername(email)
-            .orElseThrow(() ->
-                    new hotelException("Tài khoản không tồn tại"));
+        Account account = accountRepository.findByUsername(email)
+                .orElseThrow(() ->
+                        new hotelException("Tài khoản không tồn tại"));
 
-    account.setPassword(passwordEncoder.encode(newPassword));
-    accountRepository.save(account);
-}
+        account.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(account);
+    }
+    @Transactional
+    public void softDeleteAccount(Long id){
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() ->
+                        new hotelException("Tài khoản không tồn tại"));
+        account.setIsDeleted((byte) 1);
+        accountRepository.save(account);
+    }
+    @Transactional
+    public void softRestoreAccount(Long id){
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() ->
+                        new hotelException("Tài khoản không tồn tại"));
+        account.setIsDeleted((byte) 0);
+        accountRepository.save(account);
+    }
 }
