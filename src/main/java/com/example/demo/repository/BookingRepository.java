@@ -94,4 +94,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                      "WHERE h.userId = :userId " +
                      "ORDER BY b.id DESC")
        List<BookingDetailDTO> getBookingByPartnerId(@Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT r.hotelId FROM Booking b JOIN Room r ON b.roomId = r.id WHERE b.userId = :userId ORDER BY b.id DESC")
+    List<Long> findDistinctHotelIdsByUserId(@Param("userId") Long userId);
 }
