@@ -27,9 +27,13 @@ public class FileUpLoadUtil {
             throw new IllegalArgumentException("Max file size is 2MB");
         }
         final String filename = file.getOriginalFilename();
+        if(filename == null || filename.isBlank()){
+            throw new IllegalArgumentException("File name is invalid");
+        }
         final String extension = FilenameUtils.getExtension(filename);
-        if(!isAllowedExtention(filename, pattern)){
-            throw new IllegalArgumentException("File type not allowed");
+        // Check only the extension, not the full filename (avoids failure on spaces/special chars)
+        if(!isAllowedExtention("file." + extension, pattern)){
+            throw new IllegalArgumentException("File type not allowed: " + extension);
         }
     }
 

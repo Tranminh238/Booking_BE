@@ -266,5 +266,4 @@ public class RoomService {
                 .numberOfNights(nights)
                 .build();
     }
-
 }

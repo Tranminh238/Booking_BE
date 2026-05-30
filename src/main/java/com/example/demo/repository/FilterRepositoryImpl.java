@@ -33,6 +33,7 @@ public class FilterRepositoryImpl implements FilterRepository {
                         h.star                              as hotelStar,
                         h.status                            as hotelStatus,
                         ha2.city                            as hotelCity,
+                        ha2.district                        as hotelDistrict,
                         h.rating_avg                        as hotelRatingAvg,
                         GROUP_CONCAT(DISTINCT rt.name)      as roomTypeName,
                         MIN(r.id)                           as cheapestRoomId,
@@ -115,7 +116,7 @@ public class FilterRepositoryImpl implements FilterRepository {
             where = QueryUtil.createWhereQuery(whereList);
         }
 
-        String groupBy = " GROUP BY h.id, h.name, h.star, h.status, ha2.city, h.rating_avg";
+        String groupBy = " GROUP BY h.id, h.name, h.star, h.status, ha2.city, h.rating_avg, ha2.district";
 
         String order = " ORDER BY ";
         if (StringUtils.isNotBlank(request.getSort())) {
@@ -192,9 +193,27 @@ public class FilterRepositoryImpl implements FilterRepository {
     }
 
     public Page<HotelFilterResponse> filterHotel(Pageable pageable, HotelFilter request) {
+        // Count query for total elements
+        String baseQuery = createGetHotelQuery(request);
+        String countQuery = "SELECT COUNT(*) FROM (" + baseQuery + ") AS total_count";
+        Map<String, Object> params = createParams(request);
+
+        long total = 0;
+        try {
+            Long countResult = jdbcTemplate.queryForObject(countQuery, params, Long.class);
+            total = countResult != null ? countResult : 0;
+        } catch (Exception e) {
+            total = 0;
+        }
+
+        // Data query with LIMIT and OFFSET for real pagination
+        String dataQuery = baseQuery
+                + " LIMIT " + pageable.getPageSize()
+                + " OFFSET " + pageable.getOffset();
+
         List<HotelFilterResponse> hotelFilterResponses = jdbcTemplate.query(
-                createGetHotelQuery(request),
-                createParams(request),
+                dataQuery,
+                params,
                 (rs, rowNum) -> HotelFilterResponse.builder()
                         .id(rs.getLong("hotelId"))
                         .name(rs.getString("hotelName"))
@@ -203,6 +222,7 @@ public class FilterRepositoryImpl implements FilterRepository {
                         .amenities(rs.getString("hotelAmenities") != null
                                 ? java.util.Arrays.asList(rs.getString("hotelAmenities").split(","))
                                 : new ArrayList<>())
+                        .district(rs.getString("hotelDistrict"))
                         .city(rs.getString("hotelCity"))
                         .rating_avg(rs.getFloat("hotelRatingAvg"))
                         .roomTypeName(rs.getString("roomTypeName") != null
@@ -211,8 +231,7 @@ public class FilterRepositoryImpl implements FilterRepository {
                         .roomPricePerNight(rs.getDouble("roomPricePerNight"))
                         .originalRoomPricePerNight(rs.getDouble("originalRoomPricePerNight"))
                         .build());
-
-        return new PageImpl<>(hotelFilterResponses, pageable, hotelFilterResponses.size());
+        return new PageImpl<>(hotelFilterResponses, pageable, total);
     }
 
 }

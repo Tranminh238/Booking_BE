@@ -38,6 +38,9 @@ public class UserService {
         if (accountRepository.findByUsername(request.getUsername()).isEmpty()) {
             throw new hotelException("Tài khoản không tồn tại");
         }
+        if(accountRepository.findByUsernameAndIsDeleteTrue(request.getUsername()).isPresent()){
+            throw new hotelException("Tài khoản đã bị khóa!");
+        }
         Optional<Account> user = accountRepository.findByUsername(request.getUsername());
         if (user.isPresent()) {
             boolean checkPassword = passwordEncoder.matches(request.getPassword(), user.get().getPassword());
@@ -74,6 +77,9 @@ public class UserService {
     public BaseResponse loginPartner(AuthRequest request) {
         if (accountRepository.findByUsername(request.getUsername()).isEmpty()) {
             throw new hotelException("Tài khoản không tồn tại");
+        }
+        if(accountRepository.findByUsernameAndIsDeleteTrue(request.getUsername()).isPresent()){
+            throw new hotelException("Tài khoản đã bị khóa!");
         }
         Optional<Account> user = accountRepository.findByUsername(request.getUsername());
         if (user.isPresent()) {

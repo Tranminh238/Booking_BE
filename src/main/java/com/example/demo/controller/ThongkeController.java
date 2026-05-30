@@ -23,14 +23,14 @@ public class ThongkeController {
 
     @GetMapping("/revenue-hotel")
     public ResponseEntity<?> getMonthlyRevenueHotel(
+            @RequestParam(required = false) Long hotelId,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @AuthenticationPrincipal Account account) {
+            @RequestParam(required = false) Integer month) {
         LocalDate now = LocalDate.now();
         int resolvedYear = (year != null) ? year : now.getYear();
         int resolvedMonth = (month != null) ? month : now.getMonthValue();
 
-        Map<String, Object> result = thongKeService.getMonthSummaryHotel(account.getId(), resolvedYear, resolvedMonth);
+        Map<String, Object> result = thongKeService.getMonthSummaryHotel(hotelId,resolvedYear, resolvedMonth);
         return ResponseEntity.ok(result);
     }
 

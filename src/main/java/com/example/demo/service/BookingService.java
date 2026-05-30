@@ -151,8 +151,6 @@ public class BookingService {
                                  int basePrice, int numRoom) {
         double total = 0;
         LocalDate current = checkIn;
-
-        // Mỗi vòng lặp = 1 đêm (từ current đến current+1)
         while (current.isBefore(checkOut)) {
             double priceThisNight = getPriceForDate(roomId, current, basePrice);
             total += priceThisNight * numRoom;

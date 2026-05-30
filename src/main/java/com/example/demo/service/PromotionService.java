@@ -32,6 +32,12 @@ public class PromotionService {
         if (request.getStartDate().isBefore(LocalDate.now())) {
             throw new RuntimeException("startDate must be in the future");
         }
+        if (promotionRepository.existsOverlappingPromotion(
+                request.getRoomId(),
+                request.getStartDate(),
+                request.getEndDate())) {
+            throw new RuntimeException("Giá phòng đã có khuyến mãi vào thời gian này!");
+        }
 
         Promotion p = new Promotion();
         p.setRoomId(request.getRoomId());

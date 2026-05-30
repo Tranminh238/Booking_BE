@@ -42,6 +42,9 @@ public class HotelController {
             @RequestParam(required = false) String checkInInstructions,
             @RequestParam(required = false) String smokePolicy,
             @RequestParam(required = false) String petPolicy,
+            @RequestParam(required = false) Integer isRefund,
+            @RequestParam(required = false) Integer minDateRefund,
+            @RequestParam(required = false) Integer refundPercentage,
             @RequestParam(required = false) List<Long> amenityIds,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles) {
@@ -63,6 +66,9 @@ public class HotelController {
                     .checkInInstructions(checkInInstructions)
                     .smokePolicy(smokePolicy)
                     .petPolicy(petPolicy)
+                    .isRefund(isRefund)
+                    .minDateRefund(minDateRefund)
+                    .refundPercentage(refundPercentage)
                     .build();
             hotelService.createHotel(form, images, policyFiles);
             return ResponseEntity.ok(new BaseResponse(200, "Thêm khách sạn thành công", null));
@@ -85,6 +91,13 @@ public class HotelController {
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String country,
+            @RequestParam(required = false) String identificationDocuments,
+            @RequestParam(required = false) String checkInInstructions,
+            @RequestParam(required = false) String smokePolicy,
+            @RequestParam(required = false) String petPolicy,
+            @RequestParam(required = false) Integer isRefund,
+            @RequestParam(required = false) Integer minDateRefund,
+            @RequestParam(required = false) Integer refundPercentage,
             @RequestParam(required = false) List<Long> amenityIds,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles) {
@@ -101,6 +114,13 @@ public class HotelController {
                     .district(district)
                     .city(city)
                     .country(country)
+                    .identificationDocuments(identificationDocuments)
+                    .checkInInstructions(checkInInstructions)
+                    .smokePolicy(smokePolicy)
+                    .petPolicy(petPolicy)
+                    .isRefund(isRefund)
+                    .minDateRefund(minDateRefund)
+                    .refundPercentage(refundPercentage)
                     .amenityIds(amenityIds)
                     .build();
             hotelService.updateHotel(id, form, images, policyFiles);

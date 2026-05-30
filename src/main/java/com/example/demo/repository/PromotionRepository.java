@@ -42,4 +42,20 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
         @Param("roomId") Long roomId,
         @Param("date") LocalDate date
     );
+
+    @Query("""
+        SELECT COUNT(p) > 0
+        FROM Promotion p
+        WHERE p.roomId = :roomId
+        AND p.status = 1
+        AND (
+            :startDate <= p.endDate
+            AND :endDate >= p.startDate
+        )
+    """)
+    boolean existsOverlappingPromotion(
+            @Param("roomId") Long roomId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

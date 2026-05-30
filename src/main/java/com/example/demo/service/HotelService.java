@@ -99,6 +99,9 @@ public class HotelService {
                 .checkInInstructions(form.getCheckInInstructions())
                 .smokePolicy(form.getSmokePolicy())
                 .petPolicy(form.getPetPolicy())
+                .isRefund(form.getIsRefund())
+                .minDateRefund(form.getMinDateRefund())
+                .refundPercentage(form.getRefundPercentage())
                 .build();
         hotelPolicyRepository.save(hotelPolicy);
 
@@ -188,7 +191,8 @@ public class HotelService {
         }
 
         if (form.getIdentificationDocuments() != null || form.getCheckInInstructions() != null
-                || form.getSmokePolicy() != null || form.getPetPolicy() != null) {
+                || form.getSmokePolicy() != null || form.getPetPolicy() != null
+                || form.getIsRefund() != null || form.getMinDateRefund() != null || form.getRefundPercentage() != null) {
             HotelPolicy policy = hotelPolicyRepository.findByHotelId(hotel.getId())
                     .orElse(HotelPolicy.builder().hotelId(hotel.getId()).build());
             if (form.getIdentificationDocuments() != null)
@@ -199,6 +203,12 @@ public class HotelService {
                 policy.setSmokePolicy(form.getSmokePolicy());
             if (form.getPetPolicy() != null)
                 policy.setPetPolicy(form.getPetPolicy());
+            if (form.getIsRefund() != null)
+                policy.setIsRefund(form.getIsRefund());
+            if (form.getMinDateRefund() != null)
+                policy.setMinDateRefund(form.getMinDateRefund());
+            if (form.getRefundPercentage() != null)
+                policy.setRefundPercentage(form.getRefundPercentage());
             hotelPolicyRepository.save(policy);
         }
 
@@ -426,6 +436,9 @@ public class HotelService {
                 .checkInInstructions(hotelPolicy != null ? hotelPolicy.getCheckInInstructions() : null)
                 .smokePolicy(hotelPolicy != null ? hotelPolicy.getSmokePolicy() : null)
                 .petPolicy(hotelPolicy != null ? hotelPolicy.getPetPolicy() : null)
+                .isRefund(hotelPolicy != null ? hotelPolicy.getIsRefund() : null)
+                .minDateRefund(hotelPolicy != null ? hotelPolicy.getMinDateRefund() : null)
+                .refundPercentage(hotelPolicy != null ? hotelPolicy.getRefundPercentage() : null)
                 .review_count(reviewCount)
                 .min_price(minPrice)
                 .created_at(hotel.getCreated_at())

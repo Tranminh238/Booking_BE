@@ -17,4 +17,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Query("SELECT a.role FROM Account a WHERE a.username = :userName")
     String findUserRoleByUsername(@Param("userName") String userName);
+
+    @Query("SELECT a FROM Account a WHERE a.username = :userName and a.isDeleted = 1")
+    Optional<Account> findByUsernameAndIsDeleteTrue(@Param("userName") String userName);
 }

@@ -27,6 +27,9 @@ public class HotelPolicyService {
                 .checkInInstructions(form.getCheckInInstructions())
                 .smokePolicy(form.getSmokePolicy())
                 .petPolicy(form.getPetPolicy())
+                .isRefund(form.getIsRefund())
+                .minDateRefund(form.getMinDateRefund())
+                .refundPercentage(form.getRefundPercentage())
                 .build();
         return hotelPolicyRepository.save(policy);
     }
@@ -47,6 +50,12 @@ public class HotelPolicyService {
             policy.setSmokePolicy(form.getSmokePolicy());
         if (form.getPetPolicy() != null)
             policy.setPetPolicy(form.getPetPolicy());
+        if (form.getIsRefund() != null)
+            policy.setIsRefund(form.getIsRefund());
+        if (form.getMinDateRefund() != null)
+            policy.setMinDateRefund(form.getMinDateRefund());
+        if (form.getRefundPercentage() != null)
+            policy.setRefundPercentage(form.getRefundPercentage());
 
         return hotelPolicyRepository.save(policy);
     }

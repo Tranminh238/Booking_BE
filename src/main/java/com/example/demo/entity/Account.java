@@ -34,7 +34,7 @@ public class Account implements UserDetails {
     private String role;
 
     @Column(name = "is_deleted")
-    private Byte isDeleted;
+    private Integer isDeleted;
 
     @Column(name = "otp")
     private String otp;

@@ -40,6 +40,12 @@ public class HotelForm {
     @NotNull
     private String petPolicy;
     @NotNull
+    private Integer isRefund;
+    @NotNull
+    private Integer minDateRefund;
+    @NotNull
+    private Integer refundPercentage;
+    @NotNull
     private List<String> policy_url;
     private List<Long> amenityIds;
     @NotNull

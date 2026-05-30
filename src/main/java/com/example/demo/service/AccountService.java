@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.Account.request.RegistRequest;
 import com.example.demo.dto.Account.request.ChangePassword;
+import com.example.demo.dto.Account.request.ForgotPassword;
 import com.example.demo.dto.User.request.ClientEdditInfoRequest;
 import com.example.demo.dto.User.response.ClientInfoResponse;
 import com.example.demo.entity.User;
@@ -154,31 +155,33 @@ public class AccountService {
         emailService.sendOtpEmail(email, otp);
     }
     @Transactional
-public void verifyOtp(String email, String otp) {
-    Account account = accountRepository.findByUsername(email)
-            .orElseThrow(() ->
-                    new hotelException("Tài khoản không tồn tại"));
-
-    if (!otp.equals(account.getOtp())) {
-        throw new hotelException("Mã OTP không chính xác");
-    }
-
-    if (LocalDateTime.now().isAfter(account.getOtpCreatedAt())) {
-        throw new hotelException("Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới");
-    }
-    account.setOtp(null);
-    account.setOtpCreatedAt(null);
-    accountRepository.save(account);
-}
-    @Transactional
-    public void resetPassword(String email, String otp, String newPassword) {
-        verifyOtp(email, otp);
-
+    public void verifyOtp(String email, String otp) {
         Account account = accountRepository.findByUsername(email)
                 .orElseThrow(() ->
                         new hotelException("Tài khoản không tồn tại"));
 
-        account.setPassword(passwordEncoder.encode(newPassword));
+        if (!otp.equals(account.getOtp())) {
+            throw new hotelException("Mã OTP không chính xác");
+        }
+
+        if (LocalDateTime.now().isAfter(account.getOtpCreatedAt())) {
+            throw new hotelException("Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới");
+        }
+    }
+    @Transactional
+    public void resetPassword(ForgotPassword forgotPassword) {
+        if (!forgotPassword.getNewPassword().equals(forgotPassword.getConfirmPassword())) {
+            throw new hotelException("Mật khẩu mới không khớp");
+        }
+        verifyOtp(forgotPassword.getEmail(), forgotPassword.getOtp());
+
+        Account account = accountRepository.findByUsername(forgotPassword.getEmail())
+                .orElseThrow(() ->
+                        new hotelException("Tài khoản không tồn tại"));
+
+        account.setPassword(passwordEncoder.encode(forgotPassword.getNewPassword()));
+        account.setOtp(null);
+        account.setOtpCreatedAt(null);
         accountRepository.save(account);
     }
     @Transactional
@@ -186,7 +189,7 @@ public void verifyOtp(String email, String otp) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() ->
                         new hotelException("Tài khoản không tồn tại"));
-        account.setIsDeleted((byte) 1);
+        account.setIsDeleted(1);
         accountRepository.save(account);
     }
     @Transactional
@@ -194,7 +197,7 @@ public void verifyOtp(String email, String otp) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() ->
                         new hotelException("Tài khoản không tồn tại"));
-        account.setIsDeleted((byte) 0);
+        account.setIsDeleted(0);
         accountRepository.save(account);
     }
 }

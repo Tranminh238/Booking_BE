@@ -92,28 +92,37 @@ public class AccountController {
         }
     }
 
+    @PostMapping("/forgot-password/verify-otp")
+    public ResponseEntity<BaseResponse> verifyOtp(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String otp = request.get("otp");
+            accountService.verifyOtp(email, otp);
+            return ResponseEntity.ok(new BaseResponse(200, "Mã OTP đã được xác thực thành công", null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
+        }
+    }
     @PostMapping("/forgot-password/reset")
     public ResponseEntity<BaseResponse> resetPassword(@RequestBody @Valid ForgotPassword request) {
         try {
-            if (request.getNewPassword() == null || request.getNewPassword().trim().isEmpty()) {
-                return ResponseEntity.ok(new BaseResponse(400, "Mật khẩu mới không được để trống", null));
-            }
             if (!request.getNewPassword().equals(request.getConfirmPassword())) {
                 return ResponseEntity.ok(new BaseResponse(400, "Mật khẩu xác nhận không khớp", null));
             }
-            accountService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+            accountService.resetPassword(request);
             return ResponseEntity.ok(new BaseResponse(200, "Đặt lại mật khẩu thành công", null));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
         }
     }
     @PostMapping("/delete/{id}")
-    public ResponseEntity<BaseResponse> softDeleteAccount(@PathVariable Long id){
+    public ResponseEntity<BaseResponse> softDeleteAccount(@PathVariable Long id) {
         try {
             accountService.softDeleteAccount(id);
             return ResponseEntity.ok(new BaseResponse(200, "Success", null));
         } catch (Exception e) {
-            return ResponseEntity.ok(new BaseResponse(500, e.getMessage(), null));
+            return ResponseEntity.status(500)  // ← HTTP 500 thật sự
+                    .body(new BaseResponse(500, e.getMessage(), null));
         }
     }
     @PostMapping("/restore/{id}")

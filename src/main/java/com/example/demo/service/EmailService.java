@@ -45,7 +45,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(toEmail);
-            helper.setSubject("✅ Xác nhận đặt phòng thành công - Mã #" + bookingId);
+            helper.setSubject("Xác nhận đặt phòng thành công - Mã #" + bookingId);
             helper.setText(
                 buildBookingConfirmationEmailContent(
                     customerName, bookingId, hotelName, hotelCity, checkIn, checkOut, totalPrice),
@@ -69,7 +69,7 @@ public class EmailService {
         return """
             <div style="font-family: Arial, sans-serif; max-width: 620px; margin: auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
               <div style="background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 28px; text-align: center;">
-                <h1 style="color: white; margin: 0; font-size: 22px;">🏨 Đặt Phòng Thành Công!</h1>
+                <h1 style="color: white; margin: 0; font-size: 22px;"> Đặt Phòng Thành Công!</h1>
                 <p style="color: #cce0ff; margin: 8px 0 0;">Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi.</p>
               </div>
               <div style="padding: 28px;">
@@ -106,7 +106,7 @@ public class EmailService {
                   </tr>
                 </table>
                 <p style="margin-top: 24px; color: #555;">Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email hỗ trợ.</p>
-                <p style="color: #555;">Chúc bạn có một kỳ nghỉ tuyệt vời! 🌟</p>
+                <p style="color: #555;">Chúc bạn có một kỳ nghỉ tuyệt vời! </p>
               </div>
               <div style="background-color: #f5f5f5; padding: 16px; text-align: center; font-size: 12px; color: #999;">
                 © 2025 Hotel Booking System
@@ -133,7 +133,7 @@ public class EmailService {
                   </tr>
                   <tr>
                     <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Trạng thái</td>
-                    <td style="padding: 10px; border: 1px solid #ddd; color: #4CAF50;"><strong>✅ Đã duyệt</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd; color: #4CAF50;"><strong> Đã duyệt</strong></td>
                   </tr>
                   <tr style="background-color: #f5f5f5;">
                     <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Địa chỉ</td>
@@ -158,7 +158,7 @@ public class EmailService {
                 © 2025 Hotel Booking System
               </div>
             </div>
-            """.formatted(hotelName, address, city, country, "⭐".repeat(star));
+            """.formatted(hotelName, address, city, country, "".repeat(star));
     }
 
     public void sendOtpEmail(String toEmail, String otp) {
@@ -167,7 +167,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(toEmail);
-            helper.setSubject("🔑 Mã OTP xác minh quên mật khẩu");
+            helper.setSubject(" Mã OTP xác minh quên mật khẩu");
             helper.setText(buildOtpEmailContent(otp), true);
 
             mailSender.send(message);
@@ -180,7 +180,7 @@ public class EmailService {
         return """
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
               <div style="background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 24px; text-align: center;">
-                <h1 style="color: white; margin: 0; font-size: 20px;">🔒 Xác Minh Quên Mật Khẩu</h1>
+                <h1 style="color: white; margin: 0; font-size: 20px;"> Xác Minh Quên Mật Khẩu</h1>
               </div>
               <div style="padding: 24px;">
                 <p>Xin chào,</p>
