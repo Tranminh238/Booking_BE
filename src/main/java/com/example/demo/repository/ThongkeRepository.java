@@ -65,4 +65,69 @@ public interface ThongkeRepository extends JpaRepository<Payment, Long> {
         @Param("year") int year,
         @Param("month") int month
     );
+    @Query("""
+        SELECT COUNT(*) FROM Booking b
+        LEFT JOIN Room r ON b.roomId = r.id
+        LEFT JOIN Hotel h ON r.hotelId = h.id
+        WHERE h.userId = :userId
+    """)
+    Long getTotalBookingByPartner(@Param("userId") Long userId);
+    @Query("""
+        SELECT COUNT(*) FROM Booking b
+        LEFT JOIN Room r ON b.roomId = r.id
+        LEFT JOIN Hotel h ON r.hotelId = h.id
+        WHERE h.id = :hotelId
+    """)
+    Long getTotalBookingByHotel(@Param("hotelId") Long hotelId);
+    
+    @Query("SELECT COUNT(*) FROM Booking b")
+    Long getTotalBookingAdmin();
+
+    @Query("""
+        SELECT SUM(p.amount) FROM Payment p
+        LEFT JOIN Booking b ON p.bookingId = b.id
+        LEFT JOIN Room r ON b.roomId = r.id
+        LEFT JOIN Hotel h ON r.hotelId = h.id
+        WHERE h.userId = :userId
+          AND p.status = 2
+          AND YEAR(p.createdAt) = :year
+          AND MONTH(p.createdAt) = :month
+    """)
+    Long getTotalRevenueByPartner(@Param("userId") Long userId, @Param("year") int year, @Param("month") int month);
+
+    @Query("""
+        SELECT SUM(p.amount) FROM Payment p
+        LEFT JOIN Booking b ON p.bookingId = b.id
+        LEFT JOIN Room r ON b.roomId = r.id
+        LEFT JOIN Hotel h ON r.hotelId = h.id
+        WHERE h.userId = :userId
+          AND YEAR(p.createdAt) = :year
+          AND MONTH(p.createdAt) = :month
+    """)
+    Long getTotalBookingByMonth(@Param("userId") Long userId, @Param("year") int year, @Param("month") int month);
+
+
+
+    @Query("""
+        SELECT SUM(p.amount) FROM Payment p
+        LEFT JOIN Booking b ON p.bookingId = b.id
+        LEFT JOIN Room r ON b.roomId = r.id
+        LEFT JOIN Hotel h ON r.hotelId = h.id
+        WHERE p.status = 2
+          AND YEAR(p.createdAt) = :year
+          AND MONTH(p.createdAt) = :month
+    """)
+    Long getTotalBookingByMonthAdmin(@Param("year") int year, @Param("month") int month);
+
+    @Query("""
+        SELECT SUM(p.amount) FROM Payment p
+        LEFT JOIN Booking b ON p.bookingId = b.id
+        LEFT JOIN Room r ON b.roomId = r.id
+        LEFT JOIN Hotel h ON r.hotelId = h.id
+        WHERE h.id = :hotelId
+          AND p.status = 2
+          AND YEAR(p.createdAt) = :year
+          AND MONTH(p.createdAt) = :month
+    """)
+    Long getTotalBookingByMonthByHotel(@Param("hotelId") Long hotelId, @Param("year") int year, @Param("month") int month);
 }

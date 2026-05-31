@@ -38,12 +38,20 @@ public class ThongKeService {
         long avgDay       = daily.isEmpty() ? 0 :
             Math.round(daily.stream().mapToLong(ThongkeDTO::getRevenue).average().orElse(0));
 
+        Long totalBookingVal = thongkeRepository.getTotalBookingAdmin();
+        long totalBooking = totalBookingVal != null ? totalBookingVal : 0L;
+
+        Long totalBookingByMonthVal = thongkeRepository.getTotalBookingByMonthAdmin(year, month);
+        long totalBookingByMonth = totalBookingByMonthVal != null ? totalBookingByMonthVal : 0L;
+
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("year", year);
         summary.put("month", month);
         summary.put("totalRevenue", totalRevenue);
         summary.put("maxDayRevenue", maxDay);
         summary.put("avgDayRevenue", avgDay);
+        summary.put("totalBooking", totalBooking);
+        summary.put("totalBookingByMonth", totalBookingByMonth);
         summary.put("daily", daily);
         return summary;
     }
@@ -64,12 +72,20 @@ public class ThongKeService {
         long avgDay       = daily.isEmpty() ? 0 :
             Math.round(daily.stream().mapToLong(ThongkeDTO::getRevenue).average().orElse(0));
 
+        Long totalBookingVal = thongkeRepository.getTotalBookingByPartner(userId);
+        long totalBooking = totalBookingVal != null ? totalBookingVal : 0L;
+
+        Long totalBookingByMonthVal = thongkeRepository.getTotalBookingByMonth(userId, year, month);
+        long totalBookingByMonth = totalBookingByMonthVal != null ? totalBookingByMonthVal : 0L;
+
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("year", year);
         summary.put("month", month);
         summary.put("totalRevenue", totalRevenue);
         summary.put("maxDayRevenue", maxDay);
         summary.put("avgDayRevenue", avgDay);
+        summary.put("totalBooking", totalBooking);
+        summary.put("totalBookingByMonth", totalBookingByMonth);
         summary.put("daily", daily);
         return summary;
     }
@@ -89,14 +105,22 @@ public class ThongKeService {
         long avgDay       = daily.isEmpty() ? 0 :
             Math.round(daily.stream().mapToLong(ThongkeDTO::getRevenue).average().orElse(0));
 
+        Long totalBookingVal = thongkeRepository.getTotalBookingByHotel(hotelId);
+        long totalBooking = totalBookingVal != null ? totalBookingVal : 0L;
+
+        Long totalBookingByMonthVal = thongkeRepository.getTotalBookingByMonthByHotel(hotelId, year, month);
+        long totalBookingByMonth = totalBookingByMonthVal != null ? totalBookingByMonthVal : 0L;
+
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("year", year);
         summary.put("month", month);
         summary.put("totalRevenue", totalRevenue);
         summary.put("maxDayRevenue", maxDay);
         summary.put("avgDayRevenue", avgDay);
+        summary.put("totalBooking", totalBooking);
+        summary.put("totalBookingByMonth", totalBookingByMonth);
         summary.put("daily", daily);
         return summary;
     }
-
+    
 }
