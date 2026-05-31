@@ -32,6 +32,7 @@ public class HotelResponse {
     private List<String> images;
     private List<String> policy_url;
     private List<String> amenities;
+    private List<Long> amenity_ids;
     private String identificationDocuments;
     private String checkInInstructions;
     private String smokePolicy;

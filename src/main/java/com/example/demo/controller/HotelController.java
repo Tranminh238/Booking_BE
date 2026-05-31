@@ -99,6 +99,8 @@ public class HotelController {
             @RequestParam(required = false) Integer minDateRefund,
             @RequestParam(required = false) Integer refundPercentage,
             @RequestParam(required = false) List<Long> amenityIds,
+            @RequestParam(required = false) List<String> keepImages,
+            @RequestParam(required = false) List<String> keepPolicies,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "policyFiles", required = false) List<MultipartFile> policyFiles) {
         try {
@@ -123,7 +125,7 @@ public class HotelController {
                     .refundPercentage(refundPercentage)
                     .amenityIds(amenityIds)
                     .build();
-            hotelService.updateHotel(id, form, images, policyFiles);
+            hotelService.updateHotel(id, form, keepImages, keepPolicies, images, policyFiles);
             return ResponseEntity.ok(new BaseResponse(200, "Cập nhật khách sạn thành công", null));
         } catch (Exception e) {
             return ResponseEntity.ok(new BaseResponse(500, "Cập nhật khách sạn thất bại", e.getMessage()));

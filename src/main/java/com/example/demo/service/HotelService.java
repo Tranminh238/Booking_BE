@@ -154,7 +154,7 @@ public class HotelService {
     }
 
     @Transactional
-    public BaseResponse updateHotel(Long id, HotelForm form, List<MultipartFile> imageFiles,
+    public BaseResponse updateHotel(Long id, HotelForm form, List<String> keepImages, List<String> keepPolicies, List<MultipartFile> imageFiles,
             List<MultipartFile> policyFiles) {
 
         Hotel hotel = hotelRepository.findById(id)
@@ -212,8 +212,31 @@ public class HotelService {
             hotelPolicyRepository.save(policy);
         }
 
-        if (imageFiles != null && !imageFiles.isEmpty()) {
+        // Cập nhật tiện ích
+        if (form.getAmenityIds() != null) {
+            hotelAmenitiesRepository.deleteByHotelId(hotel.getId());
+            for (Long amenityId : form.getAmenityIds()) {
+                HotelAmenities ha = HotelAmenities.builder()
+                        .hotelId(hotel.getId())
+                        .amenityId(amenityId)
+                        .build();
+                hotelAmenitiesRepository.save(ha);
+            }
+        }
+
+        // Cập nhật ảnh khách sạn
+        List<Image> existingImages = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.HOTEL);
+        if (keepImages != null) {
+            for (Image img : existingImages) {
+                if (!keepImages.contains(img.getImageUrl())) {
+                    imageRepository.delete(img);
+                }
+            }
+        } else if (imageFiles != null && !imageFiles.isEmpty()) {
             imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.HOTEL);
+        }
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
             for (MultipartFile file : imageFiles) {
                 if (file == null || file.isEmpty())
                     continue;
@@ -231,8 +254,19 @@ public class HotelService {
             }
         }
 
-        if (policyFiles != null && !policyFiles.isEmpty()) {
+        // Cập nhật file chính sách
+        List<Image> existingPolicies = imageRepository.findByRefIdAndRefType(hotel.getId(), RefType.POLICY);
+        if (keepPolicies != null) {
+            for (Image img : existingPolicies) {
+                if (!keepPolicies.contains(img.getImageUrl())) {
+                    imageRepository.delete(img);
+                }
+            }
+        } else if (policyFiles != null && !policyFiles.isEmpty()) {
             imageRepository.deleteByRefIdAndRefType(hotel.getId(), RefType.POLICY);
+        }
+
+        if (policyFiles != null && !policyFiles.isEmpty()) {
             for (MultipartFile file : policyFiles) {
                 if (file == null || file.isEmpty())
                     continue;
@@ -410,6 +444,10 @@ public class HotelService {
                 .collect(Collectors.toList());
 
         List<String> amenities = hotelAmenitiesRepository.findAmenityNamesByHotelId(hotel.getId());
+        List<Long> amenityIds = hotelAmenitiesRepository.findByHotelId(hotel.getId())
+                .stream()
+                .map(HotelAmenities::getAmenityId)
+                .collect(Collectors.toList());
 
         int reviewCount = reviewRepository.totalReview(hotel.getId());
         Integer minPrice = roomRepository.findMinPriceByHotelId(hotel.getId());
@@ -428,6 +466,7 @@ public class HotelService {
                 .images(images)
                 .policy_url(policyUrls)
                 .amenities(amenities)
+                .amenity_ids(amenityIds)
                 .checkin_time_start(hotel.getCheckin_time_start())
                 .checkin_time_end(hotel.getCheckin_time_end())
                 .checkout_time_start(hotel.getCheckout_time_start())

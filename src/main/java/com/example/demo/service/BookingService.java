@@ -58,7 +58,7 @@ public class BookingService {
     //status: 1=WAITING, 2=CONFIRMED, 3=COMPLETE, 0=CANCELLED
     public BookingResponse createBooking(BookingRequest req) {
         if (req.getUserId() == null) {
-            throw new IllegalArgumentException("Người dùng không được để trống");
+            throw new IllegalArgumentException("Người dùng chưa đăng nhập");
         }
         if (req.getRoomId() == null) {
             throw new IllegalArgumentException("Phòng không được để trống");

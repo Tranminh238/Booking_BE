@@ -91,7 +91,10 @@ public class SecurityConfig {
                                 "/api/thongke/**",
                                 "/api/chatbot/**",
                                 "/api/recommend/**",
-                                "/api/wishlist/**")
+                                "/api/wishlist/**",
+                                "/api/conversations/**",
+                                "/api/messages/**",
+                                "/ws/**")
                         .permitAll()
 
                         // Tất cả các request còn lại cần authentication
@@ -114,8 +117,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Cho phép tất cả origins (trong production nên chỉ định cụ thể)
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        // Cho phép tất cả origins (dùng patterns để hỗ trợ WebSocket)
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
         // Cho phép các HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
@@ -123,8 +126,8 @@ public class SecurityConfig {
         // Cho phép tất cả headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
 
-        // Không cho phép credentials khi allowedOrigins là "*"
-        configuration.setAllowCredentials(false);
+        // Cho phép credentials (cần thiết cho WebSocket STOMP)
+        configuration.setAllowCredentials(true);
 
         // Expose headers (cho phép client đọc các headers này)
         configuration.setExposedHeaders(Arrays.asList("Authorization"));

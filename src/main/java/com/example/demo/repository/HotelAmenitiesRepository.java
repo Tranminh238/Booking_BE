@@ -14,4 +14,7 @@ public interface HotelAmenitiesRepository extends JpaRepository<HotelAmenities, 
     
     @Query("SELECT a.name FROM Amenity a JOIN HotelAmenities ha ON a.id = ha.amenityId WHERE ha.hotelId = :hotelId")
     List<String> findAmenityNamesByHotelId(@Param("hotelId") Long hotelId);
+
+    List<HotelAmenities> findByHotelId(Long hotelId);
+    void deleteByHotelId(Long hotelId);
 }
